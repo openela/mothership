@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mothership-worker-deployment
+  namespace: mothership
+spec:
+  selector:
+    matchLabels:
+      app: mothership-worker
+  template:
+    metadata:
+      labels:
+        app: mothership-worker
+    spec:
+      serviceAccountName: mothership
+      containers:
+        - name: mothership-worker
+          image: ko://github.com/openela/mothership/cmd/mship_worker_server
+          env:
+            - name: GIT_PROVIDER
+              value: github
+            - name: GITHUB_MAKE_REPO_PUBLIC
+              value: "false"
+            - name: GITHUB_ORG
+              value: openela-main
+            - name: GITHUB_APP_ID
+              value: "416803"
+            - name: GITHUB_APP_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: github
+                  key: private_key
+            - name: STORAGE_ENDPOINT
+              value: https://ax8edlmsvvfp.compat.objectstorage.us-phoenix-1.oraclecloud.com
+            - name: STORAGE_REGION
+              value: us-phoenix-1
+            - name: STORAGE_CONNECTION_STRING
+              value: s3://mship-srpm1
+            - name: STORAGE_PATH_STYLE
+              value: "true"
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: oci
+                  key: access_key
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: oci
+                  key: secret_key
+            - name: TEMPORAL_ADDRESS
+              value: temporal-frontend.default.svc.cluster.local:7233
+            - name: DATABASE_URI
+              valueFrom:
+                secretKeyRef:
+                  name: db
+                  key: uri
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "300m"

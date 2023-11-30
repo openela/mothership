@@ -1,0 +1,114 @@
+syntax = "proto3";
+
+package mothership.v1;
+
+import "google/api/field_behavior.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+option java_multiple_files = true;
+option java_outer_classname = "EntryProto";
+option java_package = "org.openela.mothership.v1";
+option go_package = "github.com/openela/mothership/proto/v1;mothershippb";
+
+// Entry is a single entry in the mothership log.
+// This describes the package being archived, which worker archived it,
+// when it was archived, if it was in a batch and which OS release value
+// the package was pulled from.
+message Entry {
+  // Output only. Unique ID of the entry.
+  // Format: `entries/{entry_id}`
+  string name = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // Package NEVRA (name-epoch:version-release.arch) of the package being archived.
+  string entry_id = 2 [(google.api.field_behavior) = IMMUTABLE];
+
+  // When the package was archived.
+  google.protobuf.Timestamp create_time = 3 [(google.api.field_behavior) = REQUIRED];
+
+  // OS release value the package was pulled from.
+  string os_release = 4 [(google.api.field_behavior) = REQUIRED];
+
+  // SHA256 of the package.
+  // This value is output only as the API server will determine
+  // the SHA256 of the package.
+  string sha256_sum = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // Repository name of the package as in which repository the package was archived from.
+  string repository = 6 [(google.api.field_behavior) = REQUIRED];
+
+  // Worker ID of the worker that archived the package.
+  // This value is output only as the API server will determine
+  // the worker ID of the worker that archived the package based
+  // on the authentication token used to make the request.
+  // If this field is not set, the package was archived by a
+  // user instead of a worker.
+  google.protobuf.StringValue worker_id = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // Name of the batch the package was archived in.
+  // If this field is not set, the package was not archived in a batch.
+  google.protobuf.StringValue batch = 8;
+
+  // User email of the user that archived the package.
+  // This value is output only as the API server will determine
+  // the user email of the user that archived the package based
+  // on the authentication token used to make the request.
+  // If this field is not set, the package was archived by a
+  // worker instead of a user.
+  google.protobuf.StringValue user_email = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // URI to view commit
+  string commit_uri = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // Commit hash of the resulting import
+  string commit_hash = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // Commit branch of the resulting import
+  string commit_branch = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // Commit tag of the resulting import
+  string commit_tag = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // Valid states of an entry.
+  enum State {
+    // Default value. This value is unused.
+    STATE_UNSPECIFIED = 0;
+
+    // The entry is being archived.
+    ARCHIVING = 1;
+
+    // The entry has been archived.
+    ARCHIVED = 2;
+
+    // One or more errors occurred while archiving the entry.
+    // Usually related to patches failing to apply.
+    // The entry will be placed "on hold" until the admin API
+    // receives the "rescue" call
+    ON_HOLD = 3;
+
+    // Error occurred while archiving the entry and an admin
+    // cancelled the entry.
+    // This entry CAN'T be rescued.
+    CANCELLED = 4;
+
+    // Failed to archive the entry.
+    // This entry CAN'T be rescued.
+    FAILED = 5;
+
+    // Retracting the entry.
+    RETRACTING = 6;
+
+    // Retracted. This entry CAN'T be rescued.
+    // Another import may have happened, retraction is usually done
+    // if debranding was not complete but successful.
+    RETRACTED = 7;
+  }
+  // State of the entry.
+  State state = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // Name of the package being archived.
+  string pkg = 15 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // Error message if on hold
+  string error_message = 16 [(google.api.field_behavior) = OUTPUT_ONLY];
+}

@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+COMMAND="${1:-}"
+
+if [[ "$COMMAND" == "start" ]]; then
+  docker run -d --rm --name mship_dex -p 5556:5556 -v $(pwd)/dev/dex.yaml:/dex.yaml ghcr.io/dexidp/dex:v2.37.0 dex serve /dex.yaml
+  docker run -d --rm --name mship_temporalite -p 7233:7233 -p 8233:8233 ghcr.io/mstg/temporalite:latest --log-format pretty --log-level fatal --ephemeral
+  docker run -d --rm --name mship_psql -p 5432:5432 -e POSTGRES_USER=postgres -e POSTGRES_DB=mothership -e POSTGRES_PASSWORD=postgres postgres:15.3-alpine
+elif [[ "$COMMAND" == "stop" ]]; then
+  docker stop mship_dex
+  docker stop mship_temporalite
+  docker stop mship_psql
+else
+  echo "Usage: $0 start|stop"
+  exit 1
+fi

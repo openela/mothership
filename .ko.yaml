@@ -1,0 +1,15 @@
+defaultPlatforms:
+  - linux/arm64
+  - linux/amd64
+
+builds:
+  - id: mship_server
+    main: ./cmd/mship_server
+  - id: mship_admin_server
+    main: ./cmd/mship_admin_server
+  - id: mship_worker_server
+    main: ./cmd/mship_worker_server
+  - id: mship_ui
+    main: ./ui
+    ldflags:
+      - -X main.version={{.Env.VERSION}}

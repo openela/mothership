@@ -1,0 +1,40 @@
+issuer: http://127.0.0.1:5556/dex
+
+storage:
+  type: memory
+
+web:
+  http: 0.0.0.0:5556
+
+oauth2:
+  skipApprovalScreen: true
+
+frontend:
+  issuer: peridot
+  theme: dark
+
+staticClients:
+  - id: local
+    redirectURIs:
+      - 'http://localhost:9111/auth/callback'
+    name: 'Mothership'
+    secret: local
+
+connectors:
+  - type: mockCallback
+    id: mock
+    name: Mock
+
+enablePasswordDB: true
+
+staticPasswords:
+  - email: "admin@openela.org"
+    # bcrypt hash of the string "password": $(echo password | htpasswd -BinC 10 admin | cut -d: -f2)
+    hash: "$2a$10$2b2cU8CPhOTaGrs1HRQuAueS7JTT5ZHsHSzYiFPm1leZck7Mc8T4W"
+    username: "admin"
+    userID: "08a8684b-db88-4b73-90a9-3cd1661f5466"
+  - email: "mustafa@openela.org"
+    # bcrypt hash of the string "password": $(echo password | htpasswd -BinC 10 admin | cut -d: -f2)
+    hash: "$2a$10$2b2cU8CPhOTaGrs1HRQuAueS7JTT5ZHsHSzYiFPm1leZck7Mc8T4W"
+    username: "mustafa"
+    userID: "e7eb2e4a-93cb-4527-bdc4-4642753b7dc8"

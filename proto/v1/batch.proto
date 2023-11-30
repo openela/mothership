@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package mothership.v1;
+
+import "google/api/field_behavior.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+option java_multiple_files = true;
+option java_outer_classname = "BatchProto";
+option java_package = "org.openela.mothership.v1";
+option go_package = "github.com/openela/mothership/proto/v1;mothershippb";
+
+// Batch is a collection of Entries that were imported closely
+// together. It usually indicates an update batch from a single
+// source.
+message Batch {
+  // Output only. Unique ID of the batch.
+  string name = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // Custom ID of the batch. Optional
+  string batch_id = 2;
+
+  // Worker ID that created the batch.
+  string worker_id = 3;
+
+  // Output only. Timestamp when the batch was created.
+  google.protobuf.Timestamp create_time = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // Output only. Timestamp when the batch was last updated.
+  google.protobuf.Timestamp update_time = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // Output only. Timestamp when the batch was sealed.
+  // Batches are automatically sealed after an hour of inactivity.
+  google.protobuf.Timestamp seal_time = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // Output only. Bugtracker URI of the batch.
+  google.protobuf.StringValue bugtracker_uri = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+}

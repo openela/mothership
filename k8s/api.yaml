@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mothership-api-deployment
+  namespace: mothership
+spec:
+  selector:
+    matchLabels:
+      app: mothership-api
+  template:
+    metadata:
+      labels:
+        app: mothership-api
+    spec:
+      serviceAccountName: mothership
+      containers:
+        - name: mothership-api
+          image: ko://github.com/openela/mothership/cmd/mship_server
+          env:
+            - name: TEMPORAL_ADDRESS
+              value: temporal-frontend.default.svc.cluster.local:7233
+            - name: DATABASE_URI
+              valueFrom:
+                secretKeyRef:
+                  name: db
+                  key: uri
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "300m"
+          ports:
+            - name: grpc
+              containerPort: 6677
+            - name: http
+              containerPort: 6678
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mothership-api-service
+  namespace: mothership
+spec:
+  selector:
+    app: mothership-api
+  ports:
+    - name: grpc
+      protocol: TCP
+      port: 6677
+      targetPort: 6677
+    - name: http
+      protocol: TCP
+      port: 6678
+      targetPort: 6678
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mothership-api-ingress
+  namespace: mothership
+  annotations:
+    konghq.com/strip-path: "true"
+    konghq.com/protocols: "https"
+spec:
+  ingressClassName: kong
+  tls:
+    - hosts:
+        - imports.openela.org
+      secretName: mothership-tls
+  rules:
+    - host: imports.openela.org
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: mothership-api-service
+                port:
+                  number: 6678

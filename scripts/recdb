@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+export PGPASSWORD=postgres
+export PGSSLMODE=disable
+
+DB="$1"
+P="$2"
+POSTGRES_PORT=${POSTGRES_PORT:-5432}
+POSTGRES_HOST=${POSTGRES_HOST:-localhost}
+MIG_ONLY=${MIG_ONLY:-0}
+
+PSQL="psql -U postgres -h $POSTGRES_HOST -p $POSTGRES_PORT"
+
+if [[ -z "$DB" || -z "$P" ]]; then
+  echo "usage: recdb <database name> <path to migrations>";
+  exit 1
+fi
+
+DB_EXISTS="$($PSQL -lqt | cut -d \| -f 1 | grep -qw $DB)"
+
+if [[ -z ${DB_EXISTS} ]]; then
+  $PSQL -c "create database $DB;";
+fi
+
+DATABASE_URL="postgres://postgres:postgres@${POSTGRES_HOST}:${POSTGRES_PORT}/$DB?sslmode=disable"
+m="migrate -source file://$P -database ${DATABASE_URL}"
+
+if [[ $MIG_ONLY -eq 0 ]]; then
+  $m down -all
+  $m drop -f
+fi
+$m up || exit 1

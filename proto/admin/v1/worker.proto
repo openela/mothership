@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package mothership.admin.v1;
+
+import "google/api/field_behavior.proto";
+import "google/protobuf/timestamp.proto";
+
+option java_multiple_files = true;
+option java_outer_classname = "WorkerProto";
+option java_package = "org.openela.mothership.admin.v1";
+option go_package = "github.com/openela/mothership/proto/admin/v1;mshipadminpb";
+
+// Worker is a client registered with Mothership that can submit SRPMs.
+// Usually these clients are servers that run the Linux distro that is being
+// archived and staged.
+// Only purpose of workers is to submit SRPMs and be able to identify
+// who is submitting them.
+message Worker {
+  // Output only. The resource name of the worker.
+  // Format: `workers/{worker}`
+  string name = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // Unique identifier selected during creation.
+  // Cannot be changed. Must conform to RFC-1034.
+  string worker_id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // When the worker was created.
+  google.protobuf.Timestamp create_time = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // Last check-in time of the worker.
+  google.protobuf.Timestamp last_checkin_time = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // API secret that the worker should use to authenticate itself.
+  // This is only returned when creating a new worker.
+  // Can not be retrieved or changed later.
+  string api_secret = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+}

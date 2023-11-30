@@ -1,0 +1,242 @@
+---
+document: modulemd
+version: 2
+data:
+  name: php
+  stream: 7.4
+  version: 8070020220512143100
+  context: afd00e68
+  summary: PHP scripting language
+  description: >-
+    php 7.4 module
+  license:
+    module:
+      - GPLv2+
+    content:
+      - BSD
+      - MIT
+      - PHP
+      - Zend
+  xmd:
+    mbs:
+      buildrequires:
+        httpd:
+          context: d63f516d
+          filtered_rpms: [ ]
+          koji_tag: module-httpd-2.4-8060020220406143150-d63f516d
+          ref: 50c5c6cc9e36ec4298fb61a7a1fc3342f19b4fc1
+          stream: 2.4
+          version: 8060020220406143150
+        nginx:
+          context: 55190bc5
+          filtered_rpms: [ ]
+          koji_tag: module-nginx-1.14-8000020211221191913-55190bc5
+          ref: 5ba8875eaa2ea724923d434846c169c3615f752c
+          stream: 1.14
+          version: 8000020211221191913
+        platform:
+          context: 00000000
+          filtered_rpms: [ ]
+          koji_tag: module-centos-8.7.0-build
+          ref: virtual
+          stream: el8.7.0
+          stream_collision_modules:
+          ursine_rpms:
+          version: 2
+      commit: 48c722e9d8f5899796b4ca6c269b75c062d64f6e
+      mse: TRUE
+      rpms:
+        libzip:
+          ref: 726d0a945dd54653977a16f8d040063ac5076bba
+        php:
+          ref: de86d127d3eb83106a24e8863414e59ec6b6644a
+        php-pear:
+          ref: 0a0899536130fb9dfafec37e9e4bcd5ad30c1dbd
+        php-pecl-apcu:
+          ref: 778aaeff426cb404392dd79cad2990672d2e7d40
+        php-pecl-rrd:
+          ref: 1e43aac16164894485b86969681311b791016296
+        php-pecl-xdebug:
+          ref: 492757b264ce8439aa19e4b86c6cfafb17ed5eba
+        php-pecl-zip:
+          ref: 8e9cf1e77c5d1098f280e0edbebf456450546e3e
+      scmurl: git+https://git.centos.org/modules/php.git?#48c722e9d8f5899796b4ca6c269b75c062d64f6e
+      ursine_rpms:
+        - httpd-debuginfo-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.aarch64
+        - mod_md-debugsource-1:2.0.8-8.module_el8.3.0+452+00a0bbdd.ppc64le
+        - httpd-devel-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.ppc64le
+        - mod_ldap-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.i686
+        - mod_http2-debugsource-0:1.15.7-3.module_el8.4.0+778+c970deab.x86_64
+        - mod_http2-debuginfo-0:1.15.7-3.module_el8.4.0+778+c970deab.x86_64
+        - mod_md-1:2.0.8-8.module_el8.3.0+452+00a0bbdd.ppc64le
+        - mod_ldap-debuginfo-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.ppc64le
+        - mod_http2-debuginfo-0:1.15.7-3.module_el8.4.0+778+c970deab.i686
+        - mod_http2-debugsource-0:1.15.7-3.module_el8.4.0+778+c970deab.aarch64
+        - mod_ssl-1:2.4.37-43.module_el8.5.0+1022+b541f3b1.aarch64
+        - mod_md-1:2.0.8-8.module_el8.3.0+452+00a0bbdd.x86_64
+        - httpd-debugsource-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.ppc64le
+        - httpd-tools-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.ppc64le
+        - mod_http2-debuginfo-0:1.15.7-3.module_el8.4.0+778+c970deab.aarch64
+        - mod_md-debugsource-1:2.0.8-8.module_el8.3.0+452+00a0bbdd.aarch64
+        - httpd-tools-debuginfo-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.ppc64le
+        - httpd-manual-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.noarch
+        - mod_http2-0:1.15.7-3.module_el8.4.0+778+c970deab.x86_64
+        - mod_ssl-debuginfo-1:2.4.37-43.module_el8.5.0+1022+b541f3b1.ppc64le
+        - mod_ldap-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.ppc64le
+        - mod_http2-0:1.15.7-3.module_el8.4.0+778+c970deab.i686
+        - mod_md-debuginfo-1:2.0.8-8.module_el8.3.0+452+00a0bbdd.i686
+        - mod_session-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.ppc64le
+        - mod_md-1:2.0.8-8.module_el8.3.0+452+00a0bbdd.aarch64
+        - mod_http2-debugsource-0:1.15.7-3.module_el8.4.0+778+c970deab.ppc64le
+        - httpd-debugsource-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.aarch64
+        - mod_md-debuginfo-1:2.0.8-8.module_el8.3.0+452+00a0bbdd.x86_64
+        - mod_ssl-debuginfo-1:2.4.37-43.module_el8.5.0+1022+b541f3b1.i686
+        - mod_ssl-1:2.4.37-43.module_el8.5.0+1022+b541f3b1.x86_64
+        - mod_md-debuginfo-1:2.0.8-8.module_el8.3.0+452+00a0bbdd.ppc64le
+        - httpd-tools-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.x86_64
+        - httpd-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.ppc64le
+        - mod_http2-debuginfo-0:1.15.7-3.module_el8.4.0+778+c970deab.ppc64le
+        - mod_http2-debugsource-0:1.15.7-3.module_el8.4.0+778+c970deab.i686
+        - mod_md-debugsource-1:2.0.8-8.module_el8.3.0+452+00a0bbdd.i686
+        - httpd-debugsource-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.x86_64
+        - httpd-tools-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.i686
+        - mod_ssl-debuginfo-1:2.4.37-43.module_el8.5.0+1022+b541f3b1.aarch64
+        - httpd-filesystem-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.noarch
+        - httpd-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.src
+        - mod_session-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.aarch64
+        - mod_http2-0:1.15.7-3.module_el8.4.0+778+c970deab.aarch64
+        - mod_ldap-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.aarch64
+        - httpd-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.x86_64
+        - httpd-devel-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.i686
+        - mod_proxy_html-debuginfo-1:2.4.37-43.module_el8.5.0+1022+b541f3b1.ppc64le
+        - httpd-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.aarch64
+        - httpd-tools-debuginfo-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.i686
+        - mod_proxy_html-debuginfo-1:2.4.37-43.module_el8.5.0+1022+b541f3b1.x86_64
+        - mod_proxy_html-debuginfo-1:2.4.37-43.module_el8.5.0+1022+b541f3b1.i686
+        - mod_proxy_html-1:2.4.37-43.module_el8.5.0+1022+b541f3b1.i686
+        - mod_ldap-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.x86_64
+        - mod_session-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.i686
+        - httpd-devel-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.aarch64
+        - httpd-debuginfo-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.i686
+        - mod_md-1:2.0.8-8.module_el8.3.0+452+00a0bbdd.i686
+        - mod_session-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.x86_64
+        - mod_ldap-debuginfo-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.i686
+        - mod_ssl-1:2.4.37-43.module_el8.5.0+1022+b541f3b1.i686
+        - mod_session-debuginfo-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.x86_64
+        - mod_proxy_html-1:2.4.37-43.module_el8.5.0+1022+b541f3b1.x86_64
+        - mod_md-debugsource-1:2.0.8-8.module_el8.3.0+452+00a0bbdd.x86_64
+        - mod_http2-0:1.15.7-3.module_el8.4.0+778+c970deab.src
+        - httpd-debuginfo-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.x86_64
+        - httpd-devel-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.x86_64
+        - httpd-tools-debuginfo-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.x86_64
+        - mod_proxy_html-1:2.4.37-43.module_el8.5.0+1022+b541f3b1.ppc64le
+        - mod_proxy_html-1:2.4.37-43.module_el8.5.0+1022+b541f3b1.aarch64
+        - mod_ssl-1:2.4.37-43.module_el8.5.0+1022+b541f3b1.ppc64le
+        - httpd-debugsource-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.i686
+        - mod_session-debuginfo-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.ppc64le
+        - mod_md-debuginfo-1:2.0.8-8.module_el8.3.0+452+00a0bbdd.aarch64
+        - mod_proxy_html-debuginfo-1:2.4.37-43.module_el8.5.0+1022+b541f3b1.aarch64
+        - mod_ldap-debuginfo-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.x86_64
+        - httpd-tools-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.aarch64
+        - httpd-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.i686
+        - mod_ssl-debuginfo-1:2.4.37-43.module_el8.5.0+1022+b541f3b1.x86_64
+        - httpd-tools-debuginfo-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.aarch64
+        - mod_ldap-debuginfo-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.aarch64
+        - mod_md-1:2.0.8-8.module_el8.3.0+452+00a0bbdd.src
+        - mod_http2-0:1.15.7-3.module_el8.4.0+778+c970deab.ppc64le
+        - mod_session-debuginfo-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.i686
+        - httpd-debuginfo-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.ppc64le
+        - mod_session-debuginfo-0:2.4.37-43.module_el8.5.0+1022+b541f3b1.aarch64
+  dependencies:
+    - buildrequires:
+        httpd: [ 2.4 ]
+        nginx: [ 1.14 ]
+        platform: [ el8.7.0 ]
+      requires:
+        httpd: [ 2.4 ]
+        nginx: [ ]
+        platform: [ el8 ]
+  references:
+    documentation: http://php.net/
+    tracker: https://bugs.php.net/
+  profiles:
+    common:
+      rpms:
+        - php-cli
+        - php-common
+        - php-fpm
+        - php-json
+        - php-mbstring
+        - php-xml
+    devel:
+      rpms:
+        - libzip
+        - php-cli
+        - php-common
+        - php-devel
+        - php-fpm
+        - php-json
+        - php-mbstring
+        - php-pear
+        - php-pecl-zip
+        - php-process
+        - php-xml
+    minimal:
+      rpms:
+        - php-cli
+        - php-common
+  api:
+    rpms:
+      - php-fpm
+  components:
+    rpms:
+      libzip:
+        rationale: ZIP library
+        repository: git+https://git.centos.org/rpms/libzip
+        cache: https://git.centos.org/repo/pkgs/libzip
+        ref: 726d0a945dd54653977a16f8d040063ac5076bba
+        buildorder: 1
+        arches: [ aarch64, i686, ppc64le, x86_64 ]
+      php:
+        rationale: Module API.
+        repository: git+https://git.centos.org/rpms/php
+        cache: https://git.centos.org/repo/pkgs/php
+        ref: de86d127d3eb83106a24e8863414e59ec6b6644a
+        buildorder: 1
+        arches: [ aarch64, i686, ppc64le, x86_64 ]
+      php-pear:
+        rationale: Extension management
+        repository: git+https://git.centos.org/rpms/php-pear
+        cache: https://git.centos.org/repo/pkgs/php-pear
+        ref: 0a0899536130fb9dfafec37e9e4bcd5ad30c1dbd
+        buildorder: 2
+        arches: [ aarch64, i686, ppc64le, x86_64 ]
+      php-pecl-apcu:
+        rationale: APCu extension
+        repository: git+https://git.centos.org/rpms/php-pecl-apcu
+        cache: https://git.centos.org/repo/pkgs/php-pecl-apcu
+        ref: 778aaeff426cb404392dd79cad2990672d2e7d40
+        buildorder: 3
+        arches: [ aarch64, i686, ppc64le, x86_64 ]
+      php-pecl-rrd:
+        rationale: RRD extension
+        repository: git+https://git.centos.org/rpms/php-pecl-rrd
+        cache: https://git.centos.org/repo/pkgs/php-pecl-rrd
+        ref: 1e43aac16164894485b86969681311b791016296
+        buildorder: 3
+        arches: [ aarch64, i686, ppc64le, x86_64 ]
+      php-pecl-xdebug:
+        rationale: Xdebug extension
+        repository: git+https://git.centos.org/rpms/php-pecl-xdebug
+        cache: https://git.centos.org/repo/pkgs/php-pecl-xdebug
+        ref: 492757b264ce8439aa19e4b86c6cfafb17ed5eba
+        buildorder: 3
+        arches: [ aarch64, i686, ppc64le, x86_64 ]
+      php-pecl-zip:
+        rationale: ZIP extension
+        repository: git+https://git.centos.org/rpms/php-pecl-zip
+        cache: https://git.centos.org/repo/pkgs/php-pecl-zip
+        ref: 8e9cf1e77c5d1098f280e0edbebf456450546e3e
+        buildorder: 3
+        arches: [ aarch64, i686, ppc64le, x86_64 ]
+...

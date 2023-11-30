@@ -1,0 +1,17 @@
+{
+  "name": "mship-ui",
+  "type": "module",
+  "author": "Mustafa Gezen <mustafa@ciq.com>",
+  "version": "0.0.1",
+  "license": "Apache-2.0",
+  "scripts": {
+    "dev": "concurrently --kill-others \"bun run ts-src/bundle.ts\" \"air\""
+  },
+  "dependencies": {
+    "@shoelace-style/shoelace": "^2.9.0",
+    "chokidar": "^3.5.3"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

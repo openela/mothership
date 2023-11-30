@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mothership-ui-deployment
+  namespace: mothership
+spec:
+  selector:
+    matchLabels:
+      app: mothership-ui
+  template:
+    metadata:
+      labels:
+        app: mothership-ui
+    spec:
+      serviceAccountName: mothership
+      containers:
+        - name: mothership-ui
+          image: ko://github.com/openela/mothership/ui
+          env:
+            - name: MOTHERSHIP_PUBLIC_API
+              value: mothership-api-service:6677
+            - name: MOTHERSHIP_ADMIN_API
+              value: mothership-admin-api-service:6687
+            - name: INSTANCE_NAME
+              value: "OpenELA Imports"
+            - name: SELF
+              value: "https://imports.openela.org"
+            - name: REQUIRED_OIDC_GROUP
+              value: releng
+            - name: OIDC_ISSUER
+              value: "https://id.openela.org/realms/openela"
+            - name: OIDC_CLIENT_ID
+              value: mothership
+            - name: OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: oidc
+                  key: secret
+            - name: CSRF_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: csrf
+                  key: secret
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "300m"
+          ports:
+            - name: http
+              containerPort: 9111
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mothership-ui-service
+  namespace: mothership
+spec:
+  selector:
+    app: mothership-ui
+  ports:
+    - name: http
+      protocol: TCP
+      port: 9111
+      targetPort: 9111
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mothership-ui-ingress
+  namespace: mothership
+  annotations:
+    konghq.com/strip-path: "true"
+    konghq.com/protocols: "https"
+    konghq.com/https-redirect-status-code: "308"
+spec:
+  ingressClassName: kong
+  tls:
+    - hosts:
+        - imports.openela.org
+      secretName: mothership-tls
+  rules:
+    - host: imports.openela.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mothership-ui-service
+                port:
+                  number: 9111

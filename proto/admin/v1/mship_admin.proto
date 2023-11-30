@@ -1,0 +1,159 @@
+syntax = "proto3";
+
+package mothership.admin.v1;
+
+import "google/api/annotations.proto";
+import "google/api/client.proto";
+import "google/api/field_behavior.proto";
+import "google/longrunning/operations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "proto/admin/v1/worker.proto";
+
+option java_multiple_files = true;
+option java_outer_classname = "MshipAdminProto";
+option java_package = "org.openela.mothership.admin.v1";
+option go_package = "github.com/openela/mothership/proto/admin/v1;mshipadminpb";
+
+// Service to manage Mothership/SrpmArchiver instances.
+service MshipAdmin {
+  // Gets a worker
+  rpc GetWorker(GetWorkerRequest) returns (Worker) {
+    option (google.api.http) = {
+      get: "/v1/{name=workers/*}"
+    };
+    option (google.api.method_signature) = "name";
+  }
+
+  // Lists the workers registered
+  rpc ListWorkers(ListWorkersRequest) returns (ListWorkersResponse) {
+    option (google.api.http) = {
+      get: "/v1/workers"
+    };
+  }
+
+  // (-- api-linter: core::0133::http-body=disabled
+  //     aip.dev/not-precedent: See below in the CreateWorkerRequest. We only allow worker_id --)
+  // Creates a worker
+  rpc CreateWorker(CreateWorkerRequest) returns (Worker) {
+    option (google.api.http) = {
+      post: "/v1/workers"
+      body: "*"
+    };
+    option (google.api.method_signature) = "worker_id";
+  }
+
+  // Deletes a worker
+  // Worker cannot be deleted if it has created an entry.
+  rpc DeleteWorker(DeleteWorkerRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/v1/{name=workers/*}"
+    };
+    option (google.api.method_signature) = "name";
+  }
+
+  // Rescue an entry import attempt
+  // This should be called after fixing patches that caused the import to fail.
+  // This will re-run the import attempt.
+  rpc RescueEntryImport(RescueEntryImportRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/v1/{name=entries/*}:rescueImport"
+    };
+    option (google.api.method_signature) = "name";
+  }
+
+  // Retract the entry
+  // To be able to retract an entry, the entry must be in the `ARCHIVED` state.
+  // This will allow an NVR to be re-imported.
+  rpc RetractEntry(RetractEntryRequest) returns (google.longrunning.Operation) {
+    option (google.api.http) = {
+      post: "/v1/{name=entries/*}:retract"
+    };
+    option (google.api.method_signature) = "name";
+    option (google.longrunning.operation_info) = {
+      response_type: "RetractEntryResponse"
+      metadata_type: "RetractEntryMetadata"
+    };
+  }
+}
+
+// GetWorkerRequest is the request message for GetWorker.
+message GetWorkerRequest {
+  // Required. The name of the worker to retrieve.
+  string name = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+// ListWorkersRequest is the request message for ListWorkers.
+message ListWorkersRequest {
+  // The maximum number of workers to return.
+  // If not specified, the server will pick an appropriate default.
+  int32 page_size = 1;
+
+  // A page token, received from a previous `ListWorkers` call.
+  // Provide this to retrieve the subsequent page.
+  // When paginating, all other parameters provided to `ListWorkers` must match
+  // the call that provided the page token.
+  string page_token = 2;
+
+  // The filter to apply to list of workers.
+  // Supports all fields of the `Worker` resource.
+  string filter = 3;
+
+  // The order to apply to the list of workers.
+  // Supports all fields of the `Worker` resource.
+  // Needs a suffix of either `asc` or `desc`.
+  // Example: `name asc`, `created_at desc`.
+  string order_by = 4;
+}
+
+// ListWorkersResponse is the response message for ListWorkers.
+message ListWorkersResponse {
+  // The workers belonging to the requested project.
+  repeated Worker workers = 1;
+
+  // A token, which can be sent as `page_token` to retrieve the next page.
+  // If this field is omitted, there are no subsequent pages.
+  string next_page_token = 2;
+}
+
+// (-- api-linter: core::0133::request-resource-field=disabled
+//     aip.dev/not-precedent: There is no reason to require worker as we only allow the worker_id field to be customized. --)
+// CreateWorkerRequest is the request message for CreateWorker.
+message CreateWorkerRequest {
+  // Required. The worker name to use.
+  // This id has to be at least 4 characters long and must be unique.
+  string worker_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+// DeleteWorkerRequest is the request message for DeleteWorker.
+message DeleteWorkerRequest {
+  // Required. The name of the worker to delete.
+  string name = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+// RescueEntryImportRequest is the request message for RescueEntryImport.
+message RescueEntryImportRequest {
+  // Required. The name of the entry to rescue.
+  string name = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+// RetractEntryRequest is the request message for RetractEntry.
+message RetractEntryRequest {
+  // Required. The name of the entry to retract.
+  string name = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+// RetractEntryResponse is the response message for RetractEntry.
+message RetractEntryResponse {
+  // The name of the entry that was retracted.
+  string name = 1;
+}
+
+// RetractEntryMetadata is the metadata message for RetractEntry.
+message RetractEntryMetadata {
+  // The time at which the workflow started
+  google.protobuf.Timestamp start_time = 1;
+
+  // The time at which the workflow finished
+  google.protobuf.Timestamp end_time = 2;
+}

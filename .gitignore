@@ -1,0 +1,5 @@
+.local
+.idea
+ui/node_modules
+ui/tmp
+ui/static/dist

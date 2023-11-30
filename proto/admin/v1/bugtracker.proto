@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package mothership.admin.v1;
+
+option java_multiple_files = true;
+option java_outer_classname = "BugtrackerProto";
+option java_package = "org.openela.mothership.admin.v1";
+option go_package = "github.com/openela/mothership/proto/admin/v1;mshipadminpb";
+
+// BugTrackerConfig is the configuration for a bug tracker.
+// Usually, the bug tracker is a third-party service, such as Mantis or Track
+// The configuration is used to track import batches
+message BugTrackerConfig {
+  // Supported bug trackers.
+  enum Type {
+    // Unknown bug tracker.
+    UNKNOWN = 0;
+
+    // MantisBT bug tracker.
+    MANTIS = 1;
+  }
+
+  // Type of the bug tracker.
+  Type type = 1;
+
+  // URI of the bug tracker.
+  string uri = 2;
+
+  // Configuration options for MantisBT
+  message MantisConfig {
+    // API key for the bug tracker.
+    string api_key = 1;
+
+    // Project ID mapping.
+    // Maps major version to project ID.
+    map<int32, int64> project_ids = 2;
+  }
+  // Configuration for the bug tracker.
+  oneof config {
+    // User-defined configuration for MantisBT.
+    MantisConfig mantis = 3;
+  }
+}
