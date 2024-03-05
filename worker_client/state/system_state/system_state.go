@@ -107,7 +107,10 @@ func (s *State) writeToDisk() error {
 		return err
 	}
 
-	return json.NewEncoder(f).Encode(s.state)
+	encoder := json.NewEncoder(f)
+	encoder.SetIndent("", "  ")
+
+	return encoder.Encode(s.state)
 }
 
 func (s *State) modifyPackages(merge map[string]string) error {

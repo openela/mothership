@@ -4,7 +4,12 @@ import (
 	"bytes"
 	_ "embed"
 	"encoding/base64"
+	"log/slog"
+	"os"
+
 	"github.com/openela/mothership/base"
+	"github.com/openela/mothership/base/bugtracker"
+	github_bugtracker "github.com/openela/mothership/base/bugtracker/github"
 	"github.com/openela/mothership/base/forge"
 	github_forge "github.com/openela/mothership/base/forge/github"
 	storage_detector "github.com/openela/mothership/base/storage/detector"
@@ -13,8 +18,6 @@ import (
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
 	"golang.org/x/crypto/openpgp"
-	"log/slog"
-	"os"
 )
 
 //go:embed rh_public_key.asc
@@ -70,9 +73,57 @@ func run(ctx *cli.Context) error {
 		if err != nil {
 			return err
 		}
-		remoteForge = forge.NewCacher(remoteForge)
 	default:
 		return cli.Exit("git-provider must be github", 1)
+	}
+
+	// Create bugtracker
+	var remoteTracker bugtracker.Bugtracker
+	switch ctx.String("bugtracker-provider") {
+	case "github":
+		if ctx.Bool("bugtracker-github-use-forge-auth") {
+			var appPrivateKey []byte
+			if ctx.Bool("github-app-private-key-base64") {
+				appPrivateKey, err = base64.StdEncoding.DecodeString(ctx.String("github-app-private-key"))
+				if err != nil {
+					return err
+				}
+			} else {
+				appPrivateKey = []byte(ctx.String("github-app-private-key"))
+			}
+
+			remoteTracker, err = github_bugtracker.New(
+				ctx.String("bugtracker-github-repo"),
+				ctx.String("github-app-id"),
+				appPrivateKey,
+			)
+		} else {
+			var appPrivateKey []byte
+			if ctx.Bool("bugtracker-github-app-private-key-base64") {
+				appPrivateKey, err = base64.StdEncoding.DecodeString(ctx.String("bugtracker-github-app-private-key"))
+				if err != nil {
+					return err
+				}
+			} else {
+				appPrivateKey = []byte(ctx.String("bugtracker-github-app-private-key"))
+			}
+
+			remoteTracker, err = github_bugtracker.New(
+				ctx.String("bugtracker-github-repo"),
+				ctx.String("bugtracker-github-app-id"),
+				appPrivateKey,
+			)
+		}
+		if err != nil {
+			return err
+		}
+	}
+
+	remoteForge = forge.NewCacher(remoteForge)
+
+	publicURI := ctx.String("public-uri")
+	if remoteTracker != nil && publicURI == "" {
+		return cli.Exit("public-uri is required if bugtracker is used", 1)
 	}
 
 	w := worker.New(temporalClient, ctx.String("temporal-task-queue"), worker.Options{})
@@ -81,12 +132,15 @@ func run(ctx *cli.Context) error {
 		storage,
 		gpgKeys,
 		remoteForge,
+		remoteTracker,
 		ctx.Bool("import-rolling-release"),
+		publicURI,
 	)
 
 	// Register workflows
 	w.RegisterWorkflow(mothership_worker_server.ProcessRPMWorkflow)
 	w.RegisterWorkflow(mothership_worker_server.RetractEntryWorkflow)
+	w.RegisterWorkflow(mothership_worker_server.SealBatchWorkflow)
 
 	// Register activities
 	w.RegisterActivity(workerServer)
@@ -111,6 +165,11 @@ func main() {
 				Usage:   "Whether to import packages in rolling release mode",
 				EnvVars: []string{"IMPORT_ROLLING_RELEASE"},
 				Value:   false,
+			},
+			&cli.StringFlag{
+				Name:    "public-uri",
+				Usage:   "Public URI for Mothership UI. Required if bugtracker is used.",
+				EnvVars: []string{"PUBLIC_URI"},
 			},
 			&cli.StringFlag{
 				Name: "git-provider",
@@ -175,6 +234,39 @@ func main() {
 				Name:    "github-make-repo-public",
 				Usage:   "Whether to make the Github repository public",
 				EnvVars: []string{"GITHUB_MAKE_REPO_PUBLIC"},
+				Value:   false,
+			},
+			&cli.StringFlag{
+				Name:    "bugtracker-provider",
+				Usage:   "Bugtracker provider to use. Currently only github is supported",
+				EnvVars: []string{"BUGTRACKER_PROVIDER"},
+				Value:   "github",
+			},
+			&cli.StringFlag{
+				Name:    "bugtracker-github-repo",
+				Usage:   "Github repository to use for bugtracker",
+				EnvVars: []string{"BUGTRACKER_GITHUB_REPO"},
+			},
+			&cli.StringFlag{
+				Name:    "bugtracker-github-app-id",
+				Usage:   "Github app ID for bugtracker",
+				EnvVars: []string{"BUGTRACKER_GITHUB_APP_ID"},
+			},
+			&cli.StringFlag{
+				Name:    "bugtracker-github-app-private-key",
+				Usage:   "Github app private key for bugtracker",
+				EnvVars: []string{"BUGTRACKER_GITHUB_APP_PRIVATE_KEY"},
+			},
+			&cli.BoolFlag{
+				Name:    "bugtracker-github-app-private-key-base64",
+				Usage:   "Whether the Github app private key for bugtracker is base64 encoded",
+				EnvVars: []string{"BUGTRACKER_GITHUB_APP_PRIVATE_KEY_BASE64"},
+				Value:   false,
+			},
+			&cli.BoolFlag{
+				Name:    "bugtracker-github-use-forge-auth",
+				Usage:   "Whether to use forge authentication for bugtracker",
+				EnvVars: []string{"BUGTRACKER_GITHUB_USE_FORGE_AUTH"},
 				Value:   false,
 			},
 		},

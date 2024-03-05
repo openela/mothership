@@ -15,7 +15,7 @@ var w Worker
 // This part executes the import part, and retries if it fails.
 // After the first failure, the workflow is put on hold.
 // If the workflow is put on hold, the workflow can be rescued by an admin.
-func processRPMPostHold(ctx workflow.Context, entry *mothershippb.Entry, args *mothershippb.ProcessRPMArgs) (*mothershippb.ProcessRPMResponse, error) {
+func processRPMPostHold(ctx workflow.Context, entry *mothershippb.Entry, args *mothershippb.ProcessRPMArgs, num int) (*mothershippb.ProcessRPMResponse, error) {
 	// If resource exists, then we can start the import.
 	ctx = workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
 		// We'll wait up to 25 minutes for the import to finish.
@@ -85,7 +85,7 @@ func processRPMPostHold(ctx workflow.Context, entry *mothershippb.Entry, args *m
 		}
 
 		// If the workflow was not cancelled, then we can retry the import.
-		return processRPMPostHold(ctx, entry, args)
+		return processRPMPostHold(ctx, entry, args, num+1)
 	}
 
 	// If the import succeeds, then we can update the entry state.
@@ -98,6 +98,25 @@ func processRPMPostHold(ctx workflow.Context, entry *mothershippb.Entry, args *m
 	err = workflow.ExecuteActivity(ctx, w.SetEntryState, entry.Name, mothershippb.Entry_ARCHIVED, &importRpmRes).Get(ctx, entry)
 	if err != nil {
 		return nil, err
+	}
+
+	// If num > 0, this means the import failed at least once.
+	// Let's check if the entry was part of a batch, if so we'll update the ticket
+	// with the new status.
+	if num > 0 && entry.Batch != nil && entry.Batch.Value != "" {
+		ctx = workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
+			StartToCloseTimeout: 5 * time.Hour,
+			HeartbeatTimeout:    25 * time.Second,
+			RetryPolicy: &temporal.RetryPolicy{
+				// If it fails more than twice, then let's just not care.
+				// A maintainer can edit the ticket manually.
+				MaximumAttempts: 2,
+			},
+		})
+		err = workflow.ExecuteActivity(ctx, w.UpdateTicketStatus, entry).Get(ctx, nil)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &mothershippb.ProcessRPMResponse{
@@ -158,8 +177,7 @@ func ProcessRPMWorkflow(ctx workflow.Context, args *mothershippb.ProcessRPMArgs)
 			return
 		}
 
-		ctx, cancel := workflow.NewDisconnectedContext(ctx)
-		defer cancel()
+		ctx, _ := workflow.NewDisconnectedContext(ctx)
 		ctx = workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
 			StartToCloseTimeout: 25 * time.Second,
 			RetryPolicy: &temporal.RetryPolicy{
@@ -185,7 +203,7 @@ func ProcessRPMWorkflow(ctx workflow.Context, args *mothershippb.ProcessRPMArgs)
 	}
 
 	// Process the RPM.
-	return processRPMPostHold(ctx, &entry, args)
+	return processRPMPostHold(ctx, &entry, args, 0)
 }
 
 // RetractEntryWorkflow retracts an entry.
@@ -242,4 +260,44 @@ func RetractEntryWorkflow(ctx workflow.Context, name string) (*mshipadminpb.Retr
 	}
 
 	return &res, nil
+}
+
+// SealBatchWorkflow seals a batch.
+// After a worker finishing submitting their entries, they can seal the batch.
+// Sealing the batch will wait for all entries to reach a "stop" condition.
+// This can mean "ARCHIVED" or "ON_HOLD". If all entries are in a stop condition,
+// a new ticket is created in the ticketing system with the status of each entry.
+// After creating the ticket, the batch is sealed and won't accept any more entries.
+func SealBatchWorkflow(ctx workflow.Context, req *mothershippb.SealBatchRequest) (*mothershippb.SealBatchResponse, error) {
+	ctx = workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
+		StartToCloseTimeout: 5 * time.Hour,
+		HeartbeatTimeout:    25 * time.Second,
+	})
+	err := workflow.ExecuteActivity(ctx, w.WaitForEntriesToSettle, req).Get(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create ticket
+	ctx = workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
+		StartToCloseTimeout: 40 * time.Second,
+	})
+	err = workflow.ExecuteActivity(ctx, w.CreateTicket, req.Name).Get(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	// Seal batch
+	var batch mothershippb.Batch
+	ctx = workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
+		StartToCloseTimeout: 25 * time.Second,
+	})
+	err = workflow.ExecuteActivity(ctx, w.SealBatch, req.Name).Get(ctx, &batch)
+	if err != nil {
+		return nil, err
+	}
+
+	return &mothershippb.SealBatchResponse{
+		Batch: &batch,
+	}, nil
 }

@@ -4,7 +4,6 @@ package mothership.v1;
 
 import "google/api/field_behavior.proto";
 import "google/protobuf/timestamp.proto";
-import "google/protobuf/wrappers.proto";
 import "proto/v1/entry.proto";
 
 option java_multiple_files = true;
