@@ -2,6 +2,12 @@ package mothership_worker_server
 
 import (
 	"database/sql"
+	"io"
+	"os"
+	"path/filepath"
+	"testing"
+	"time"
+
 	"github.com/go-git/go-billy/v5/memfs"
 	"github.com/go-git/go-billy/v5/osfs"
 	"github.com/go-git/go-git/v5"
@@ -17,11 +23,6 @@ import (
 	mothershippb "github.com/openela/mothership/proto/v1"
 	"github.com/openela/mothership/worker_server/srpm_import"
 	"github.com/stretchr/testify/require"
-	"io"
-	"os"
-	"path/filepath"
-	"testing"
-	"time"
 )
 
 func TestGetRepo(t *testing.T) {
@@ -137,8 +138,64 @@ func TestPatchesToTemporaryFS(t *testing.T) {
 	require.Equal(t, "test", string(b))
 }
 
-// todo(mustafa): currently repositories that only has ONE commit cannot be reset.
-// todo(mustafa): add support for resetting repositories with one commit and add tests.
+func TestResetRepoToPoint_OneCommit(t *testing.T) {
+	s, err := srpm_import.FromFile("testdata/efi-rpm-macros-3-3.el8.src.rpm", false)
+	require.Nil(t, err)
+
+	tempDir, err := os.MkdirTemp("", "peridot-srpm-import-test-*")
+	require.Nil(t, err)
+
+	// Create a bare repo in tempDir
+	osfsTemp := osfs.New(tempDir)
+	dot, err := osfsTemp.Chroot(".git")
+	require.Nil(t, err)
+	filesystemTemp := filesystem.NewStorage(dot, cache.NewObjectLRUDefault())
+	require.Nil(t, filesystemTemp.Init())
+	_, err = git.Init(filesystemTemp, nil)
+	require.Nil(t, err)
+
+	opts := &git.CloneOptions{
+		URL: tempDir,
+	}
+	storer := memory.NewStorage()
+	fs := memfs.New()
+	lookaside := storage_memory.New(osfs.New("/"))
+	firstImport, err := s.Import(opts, storer, fs, lookaside, "")
+	require.Nil(t, err)
+
+	repo, err := getRepo("file://"+tempDir, nil)
+	require.Nil(t, err)
+
+	// Get wt and checkout the correct branch
+	wt, err := repo.Worktree()
+	require.Nil(t, err)
+	err = wt.Checkout(&git.CheckoutOptions{
+		Branch: plumbing.NewBranchReferenceName(firstImport.Branch),
+		Force:  true,
+	})
+	require.Nil(t, err)
+
+	err = resetRepoToPoint(
+		repo,
+		&forge.Authenticator{AuthorName: "test", AuthorEmail: "test@rockylinux.org"},
+		firstImport.Commit.Hash.String(),
+		"el-8",
+	)
+	require.Nil(t, err)
+
+	// Check that only rollback commit exists
+	log, err := repo.Log(&git.LogOptions{})
+	require.Nil(t, err)
+	commit, err := log.Next()
+	require.Nil(t, err)
+	require.NotNil(t, commit)
+	require.Equal(t, "Rollback to empty state", commit.Message)
+	commit, err = log.Next()
+	require.NotNil(t, err)
+	require.Equal(t, "EOF", err.Error())
+	require.Nil(t, commit)
+}
+
 func TestResetRepoToPoint_TwoCommits(t *testing.T) {
 	s, err := srpm_import.FromFile("testdata/efi-rpm-macros-3-3.el8.src.rpm", false)
 	require.Nil(t, err)
@@ -185,6 +242,7 @@ func TestResetRepoToPoint_TwoCommits(t *testing.T) {
 		repo,
 		&forge.Authenticator{AuthorName: "test", AuthorEmail: "test@rockylinux.org"},
 		secondImport.Commit.Hash.String(),
+		"el-8",
 	)
 	require.Nil(t, err)
 
@@ -268,6 +326,7 @@ func TestResetRepoToPoint_TwoCommits_CommitAfterRetractPoint(t *testing.T) {
 		repo,
 		&forge.Authenticator{AuthorName: "test", AuthorEmail: "test@rockylinux.org"},
 		secondImport.Commit.Hash.String(),
+		"el-8",
 	)
 	require.Nil(t, err)
 
