@@ -667,7 +667,23 @@ func (s *State) populateTargetRepo(repo *git.Repository, targetFS billy.Filesyst
 		Message: tag,
 	})
 	if err != nil {
-		return errors.Wrap(err, "failed to create tag")
+		if errors.Is(err, git.ErrTagExists) {
+			err = repo.DeleteTag(tag)
+			if err != nil {
+				return errors.Wrap(err, "failed to delete tag")
+			}
+			_, err = repo.CreateTag(tag, hash, &git.CreateTagOptions{
+				Tagger: &object.Signature{
+					Name:  s.authorName,
+					Email: s.authorEmail,
+					When:  time.Now(),
+				},
+				Message: tag,
+			})
+		}
+		if err != nil {
+			return errors.Wrap(err, "failed to create tag")
+		}
 	}
 
 	return nil
