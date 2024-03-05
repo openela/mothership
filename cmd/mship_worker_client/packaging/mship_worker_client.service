@@ -1,0 +1,16 @@
+[Unit]
+Description=Mothership Worker Client
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=root
+EnvironmentFile=/etc/mship/env
+PassEnvironment=STORAGE_ENDPOINT STORAGE_REGION STORAGE_CONNECTION_STRING STORAGE_PATH_STYLE AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY
+ExecStart=/usr/bin/mship_worker_client
+
+[Install]
+WantedBy=multi-user.target
