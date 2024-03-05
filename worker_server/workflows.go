@@ -1,11 +1,12 @@
 package mothership_worker_server
 
 import (
+	"time"
+
 	mshipadminpb "github.com/openela/mothership/proto/admin/v1"
 	mothershippb "github.com/openela/mothership/proto/v1"
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
-	"time"
 )
 
 var w Worker
@@ -17,9 +18,9 @@ var w Worker
 func processRPMPostHold(ctx workflow.Context, entry *mothershippb.Entry, args *mothershippb.ProcessRPMArgs) (*mothershippb.ProcessRPMResponse, error) {
 	// If resource exists, then we can start the import.
 	ctx = workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
-		// We'll wait up to 5 minutes for the import to finish.
+		// We'll wait up to 25 minutes for the import to finish.
 		// Most imports are fast, but some packages are very large.
-		StartToCloseTimeout: 5 * time.Minute,
+		StartToCloseTimeout: 25 * time.Minute,
 		RetryPolicy: &temporal.RetryPolicy{
 			MaximumAttempts: 1,
 		},

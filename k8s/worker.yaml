@@ -34,6 +34,8 @@ spec:
               value: https://ax8edlmsvvfp.compat.objectstorage.us-phoenix-1.oraclecloud.com
             - name: STORAGE_REGION
               value: us-phoenix-1
+            - name: IMPORT_ROLLING_RELEASE
+              value: "true"
             - name: STORAGE_CONNECTION_STRING
               value: s3://mship-srpm1
             - name: STORAGE_PATH_STYLE
