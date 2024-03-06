@@ -66,7 +66,7 @@ require (
 	github.com/facebookgo/clock v0.0.0-20150410010913-600d898af40a // indirect
 	github.com/gertd/go-pluralize v0.2.1 // indirect
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
-	github.com/go-jose/go-jose/v3 v3.0.0 // indirect
+	github.com/go-jose/go-jose/v3 v3.0.1 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/go-sql-driver/mysql v1.7.1 // indirect
 	github.com/gogo/googleapis v1.4.1 // indirect
