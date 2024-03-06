@@ -6,7 +6,7 @@ require (
 	github.com/aws/aws-sdk-go v1.45.23
 	github.com/coreos/go-oidc/v3 v3.6.0
 	github.com/go-git/go-billy/v5 v5.5.0
-	github.com/go-git/go-git/v5 v5.9.0
+	github.com/go-git/go-git/v5 v5.11.0
 	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/gorilla/csrf v1.7.1
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
@@ -43,7 +43,6 @@ require (
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/Microsoft/hcsshim v0.11.4 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20230828082145-3c4c8a2d2371 // indirect
-	github.com/acomagu/bufpipe v1.0.4 // indirect
 	github.com/antlr/antlr4/runtime/Go/antlr/v4 v4.0.0-20230512164433-5d1fd1a340c9 // indirect
 	github.com/bahlo/generic-list-go v0.2.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -109,7 +108,7 @@ require (
 	github.com/shirou/gopsutil/v3 v3.23.9 // indirect
 	github.com/shoenig/go-m1cpu v0.1.6 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
-	github.com/skeema/knownhosts v1.2.0 // indirect
+	github.com/skeema/knownhosts v1.2.1 // indirect
 	github.com/stretchr/objx v0.5.0 // indirect
 	github.com/tklauser/go-sysconf v0.3.12 // indirect
 	github.com/tklauser/numcpus v0.6.1 // indirect
@@ -122,7 +121,7 @@ require (
 	go.uber.org/goleak v1.1.12 // indirect
 	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1 // indirect
 	golang.org/x/mod v0.12.0 // indirect
-	golang.org/x/net v0.17.0 // indirect
+	golang.org/x/net v0.19.0 // indirect
 	golang.org/x/sys v0.15.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
