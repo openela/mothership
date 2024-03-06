@@ -1,6 +1,11 @@
 package mothership_worker_server
 
 import (
+	"io"
+	"os"
+	"strings"
+	"time"
+
 	"github.com/go-git/go-billy/v5"
 	"github.com/go-git/go-billy/v5/memfs"
 	"github.com/go-git/go-git/v5"
@@ -17,10 +22,6 @@ import (
 	"go.temporal.io/sdk/temporal"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"io"
-	"os"
-	"strings"
-	"time"
 )
 
 // getRepo gets a git repository from a remote
@@ -138,7 +139,7 @@ func clonePatchesToTemporaryFS(currentFS billy.Filesystem) (billy.Filesystem, er
 	return fs, nil
 }
 
-func resetRepoToPoint(repo *git.Repository, authenticator *forge.Authenticator, commit string) error {
+func resetRepoToPoint(repo *git.Repository, authenticator *forge.Authenticator, commit string, branch string) error {
 	wt, err := repo.Worktree()
 	if err != nil {
 		return errors.Wrap(err, "failed to get worktree")
@@ -160,11 +161,17 @@ func resetRepoToPoint(repo *git.Repository, authenticator *forge.Authenticator, 
 	}
 	resetToCommit, err := log.Next()
 	if err != nil {
-		return errors.Wrap(err, "failed to get next commit x2")
+		// This probably means that there's only one commit in the log
+		// which means that we don't need to revert anything.
+		// This means we should replay commits on top of an empty repo
 	}
 
 	// Also get all commits that touches the PATCHES directory
 	// until the commit we want to revert
+	var since *time.Time
+	if resetToCommit != nil {
+		since = &resetToCommit.Author.When
+	}
 	firstLog, err := repo.Log(&git.LogOptions{
 		Order: git.LogOrderCommitterTime,
 		PathFilter: func(s string) bool {
@@ -176,7 +183,7 @@ func resetRepoToPoint(repo *git.Repository, authenticator *forge.Authenticator, 
 			return false
 		},
 		// Limit to until the commit we want to revert
-		Since: &resetToCommit.Author.When,
+		Since: since,
 	})
 	if err != nil {
 		return errors.Wrap(err, "failed to get log")
@@ -208,13 +215,31 @@ func resetRepoToPoint(repo *git.Repository, authenticator *forge.Authenticator, 
 		return errors.Wrap(err, "failed to clone PATCHES")
 	}
 
-	// reset the repo
-	err = wt.Reset(&git.ResetOptions{
-		Commit: resetToCommit.Hash,
-		Mode:   git.HardReset,
-	})
-	if err != nil {
-		return errors.Wrap(err, "failed to reset repo")
+	// reset the repo if a commit was found
+	if resetToCommit != nil {
+		err = wt.Reset(&git.ResetOptions{
+			Commit: resetToCommit.Hash,
+			Mode:   git.HardReset,
+		})
+		if err != nil {
+			return errors.Wrap(err, "failed to reset repo")
+		}
+	} else {
+		// otherwise, create an empty repo
+		err = wt.RemoveGlob("*")
+		if err != nil {
+			return errors.Wrap(err, "failed to remove all files")
+		}
+		// delete the current branch
+		err = repo.Storer.RemoveReference(plumbing.NewBranchReferenceName(branch))
+		if err != nil {
+			return err
+		}
+		// re-create the branch
+		err := repo.Storer.SetReference(plumbing.NewSymbolicReference(plumbing.HEAD, plumbing.NewBranchReferenceName(branch)))
+		if err != nil {
+			return err
+		}
 	}
 
 	// Copy PATCHES back into the repo
@@ -258,6 +283,22 @@ func resetRepoToPoint(repo *git.Repository, authenticator *forge.Authenticator, 
 		})
 		if err != nil {
 			return errors.Wrap(err, "failed to commit")
+		}
+	}
+
+	// If resetToCommit is nil, that means there are no commits before the target commit
+	// On top if there are no commits to replay, we need to create an empty rollback commit
+	if resetToCommit == nil && len(commits) == 0 {
+		_, err = wt.Commit("Rollback to empty state", &git.CommitOptions{
+			AllowEmptyCommits: true,
+			Author: &object.Signature{
+				Name:  authenticator.AuthorName,
+				Email: authenticator.AuthorEmail,
+				When:  time.Now(),
+			},
+		})
+		if err != nil {
+			return errors.Wrap(err, "failed to create rollback commit")
 		}
 	}
 
@@ -309,7 +350,7 @@ func (w *Worker) RetractEntry(name string) (*mshipadminpb.RetractEntryResponse, 
 	}
 
 	// Reset the repo to the commit before the commit we want to revert
-	err = resetRepoToPoint(repo, auth, entry.CommitHash)
+	err = resetRepoToPoint(repo, auth, entry.CommitHash, entry.CommitBranch)
 	if err != nil {
 		base.LogErrorf("failed to reset repo: %v", err)
 		return nil, status.Error(codes.Internal, "failed to reset repo")
