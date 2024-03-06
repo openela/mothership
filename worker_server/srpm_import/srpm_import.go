@@ -4,6 +4,15 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"io"
+	"log"
+	"os"
+	"path/filepath"
+	"regexp"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/go-git/go-billy/v5"
 	"github.com/go-git/go-billy/v5/memfs"
 	"github.com/go-git/go-git/v5"
@@ -19,14 +28,6 @@ import (
 	"github.com/sassoftware/go-rpmutils"
 	"golang.org/x/crypto/openpgp"
 	"google.golang.org/protobuf/encoding/prototext"
-	"io"
-	"log"
-	"os"
-	"path/filepath"
-	"regexp"
-	"strconv"
-	"strings"
-	"time"
 )
 
 var (
@@ -80,8 +81,13 @@ func copyFromOS(targetFS billy.Filesystem, path string, targetPath string) error
 	}
 	defer f.Close()
 
+	stat, err := f.Stat()
+	if err != nil {
+		return errors.Wrap(err, "failed to get file info")
+	}
+
 	// Create file in target filesystem.
-	targetFile, err := targetFS.Create(targetPath)
+	targetFile, err := targetFS.OpenFile(targetPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, stat.Mode())
 	if err != nil {
 		return errors.Wrap(err, "failed to create file")
 	}

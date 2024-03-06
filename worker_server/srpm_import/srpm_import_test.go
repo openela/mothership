@@ -1,6 +1,13 @@
 package srpm_import
 
 import (
+	"io"
+	"os"
+	"path/filepath"
+	"sort"
+	"testing"
+	"time"
+
 	"github.com/go-git/go-billy/v5/memfs"
 	"github.com/go-git/go-billy/v5/osfs"
 	"github.com/go-git/go-git/v5"
@@ -12,11 +19,6 @@ import (
 	storage_memory "github.com/openela/mothership/base/storage/memory"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/crypto/openpgp"
-	"io"
-	"os"
-	"sort"
-	"testing"
-	"time"
 )
 
 func TestFromFile(t *testing.T) {
@@ -204,6 +206,48 @@ func TestExpandLayout(t *testing.T) {
 	fi, err = fs.ReadDir("SPECS")
 	require.Nil(t, err)
 
+	require.Equal(t, 1, len(fi))
+	require.Equal(t, "efi-rpm-macros.spec", fi[0].Name())
+}
+
+func TestExpandLayout_CopyMode(t *testing.T) {
+	s, err := FromFile("testdata/efi-rpm-macros-3-3.el8.src.rpm", false)
+	require.Nil(t, err)
+	require.NotNil(t, s)
+	defer func() {
+		require.Nil(t, s.Close())
+	}()
+
+	// Create a fake shell script
+	shellPath := filepath.Join(s.tempDir, "test.sh")
+	shellFile, err := os.OpenFile(shellPath, os.O_RDWR|os.O_CREATE, 0755)
+	require.Nil(t, err)
+	_, err = shellFile.WriteString("#!/bin/bash\necho 'test'\n")
+	require.Nil(t, err)
+	require.Nil(t, shellFile.Close())
+
+	fs := memfs.New()
+	require.Nil(t, s.expandLayout(fs))
+
+	fi, err := fs.ReadDir(".")
+	require.Nil(t, err)
+	require.Equal(t, 2, len(fi))
+	require.Equal(t, "SOURCES", fi[0].Name())
+	require.Equal(t, "SPECS", fi[1].Name())
+
+	fi, err = fs.ReadDir("SOURCES")
+	require.Nil(t, err)
+	require.Equal(t, 3, len(fi))
+	require.Equal(t, "0001-macros.efi-srpm-make-all-of-our-macros-always-expand.patch", fi[0].Name())
+	require.Equal(t, "efi-rpm-macros-3.tar.bz2", fi[1].Name())
+	require.Equal(t, "test.sh", fi[2].Name())
+	// Verify mode
+	info, err := fs.Stat(filepath.Join("SOURCES", "test.sh"))
+	require.Nil(t, err)
+	require.Equal(t, os.FileMode(0755), info.Mode())
+
+	fi, err = fs.ReadDir("SPECS")
+	require.Nil(t, err)
 	require.Equal(t, 1, len(fi))
 	require.Equal(t, "efi-rpm-macros.spec", fi[0].Name())
 }
