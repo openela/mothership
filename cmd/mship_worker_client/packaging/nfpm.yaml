@@ -1,0 +1,17 @@
+name: "mship_worker_client"
+arch: "amd64"
+platform: "linux"
+version: "v0.0.1"
+maintainer: "Mustafa Gezen <mustafa@ciq.com>"
+vendor: "OpenELA"
+homepage: "https://openela.org"
+license: "BSD-2"
+
+depends:
+  - systemd
+
+contents:
+  - src: mship_worker_client
+    dst: /usr/bin/mship_worker_client
+  - src: mship_worker_client.service
+    dst: /etc/systemd/system/mship_worker_client.service
