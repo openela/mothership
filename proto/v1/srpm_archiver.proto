@@ -49,6 +49,19 @@ service SrpmArchiver {
     option (google.api.method_signature) = "batch";
   }
 
+  // Seal a batch
+  // Only worker credentials can seal a batch.
+  rpc SealBatch(SealBatchRequest) returns (google.longrunning.Operation) {
+    option (google.api.http) = {
+      post: "/v1/{name=batches/*}:seal"
+      body: "*"
+    };
+    option (google.longrunning.operation_info) = {
+      response_type: "SealBatchResponse"
+      metadata_type: "SealBatchRequest"
+    };
+  }
+
   // Returns an entry
   rpc GetEntry(GetEntryRequest) returns (Entry) {
     option (google.api.http) = {
@@ -166,6 +179,24 @@ message CreateBatchRequest {
 
   // Custom ID for the batch. Optional
   string batch_id = 2;
+}
+
+// Request message for SealBatch method.
+message SealBatchRequest {
+  // The name of the batch to seal.
+  // For example: "batches/1234".
+  string name = 1 [(google.api.field_behavior) = REQUIRED];
+
+  // All operation names that are part of the batch.
+  // This is optional, but ensures that the batch is sealed only if all
+  // operations are settled.
+  repeated string operation_names = 2;
+}
+
+// Response message for SealBatch method.
+message SealBatchResponse {
+  // The sealed batch.
+  Batch batch = 1 [(google.api.field_behavior) = REQUIRED];
 }
 
 // Request message for GetEntry method.

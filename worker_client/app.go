@@ -12,6 +12,7 @@ import (
 	"github.com/openela/mothership/worker_client/state"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func getRedHatRelease() (string, error) {
@@ -29,10 +30,16 @@ func getRedHatRelease() (string, error) {
 }
 
 func Run(ctx context.Context, rootURI string, s state.State, srpmArchiver mothershippb.SrpmArchiverClient) error {
+	_, err := srpmArchiver.WorkerPing(ctx, &emptypb.Empty{})
+	if err != nil {
+		slog.Error("failed to ping mothership", "error", err)
+	}
+
 	redHatRelease, err := getRedHatRelease()
 	if err != nil {
 		return err
 	}
+	slog.Info("got red hat release", "release", redHatRelease)
 
 	err = s.FetchNewPackageState()
 	if err != nil {
@@ -44,6 +51,30 @@ func Run(ctx context.Context, rootURI string, s state.State, srpmArchiver mother
 		return nil
 	}
 
+	// Create batch
+	batch, err := srpmArchiver.CreateBatch(
+		ctx,
+		&mothershippb.CreateBatchRequest{
+			Batch: &mothershippb.Batch{},
+		},
+	)
+	if err != nil {
+		return err
+	}
+	slog.Info("created batch", "batch", batch.Name)
+
+	var allOperationNames []string
+	defer func() {
+		slog.Info("sealing batch", "batch", batch.Name)
+		_, _ = srpmArchiver.SealBatch(
+			ctx,
+			&mothershippb.SealBatchRequest{
+				Name:           batch.Name,
+				OperationNames: allOperationNames,
+			},
+		)
+	}()
+
 	for _, obj := range dirtyObjects {
 		entry, err := srpmArchiver.SubmitEntry(
 			ctx,
@@ -53,7 +84,7 @@ func Run(ctx context.Context, rootURI string, s state.State, srpmArchiver mother
 					OsRelease:  redHatRelease,
 					Checksum:   strings.TrimPrefix(obj, "/"),
 					Repository: "",
-					Batch:      "",
+					Batch:      batch.Name,
 				},
 			},
 		)
@@ -61,13 +92,15 @@ func Run(ctx context.Context, rootURI string, s state.State, srpmArchiver mother
 			statusErr, ok := status.FromError(err)
 			if ok {
 				if statusErr.Code() == codes.AlreadyExists {
-					slog.Info("entry already exists", "entry", entry.Name)
+					slog.Info("entry already exists", "obj", obj)
 					continue
 				}
 			}
 			slog.Error("failed to submit entry", "error", err)
 			return err
 		}
+
+		allOperationNames = append(allOperationNames, entry.Name)
 
 		slog.Info("submitted entry", "entry", entry.Name)
 	}
@@ -76,6 +109,8 @@ func Run(ctx context.Context, rootURI string, s state.State, srpmArchiver mother
 	if err != nil {
 		return err
 	}
+
+	slog.Info("wrote package state")
 
 	return nil
 }

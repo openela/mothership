@@ -1,8 +1,9 @@
 package forge
 
 import (
-	"github.com/go-git/go-git/v5/plumbing/transport"
 	"time"
+
+	"github.com/go-git/go-git/v5/plumbing/transport"
 )
 
 type Authenticator struct {
