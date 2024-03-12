@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mothership-worker-deployment
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "mothership.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: mothership-worker
+  template:
+    metadata:
+      labels:
+        app: mothership-worker
+    spec:
+      serviceAccountName: mothership
+      containers:
+        - name: mothership-worker
+          image: "{{ .Values.image.repository }}/mship_worker_server:{{ .Values.image.tag }}"
+          env:
+            - name: GIT_PROVIDER
+              value: github
+            - name: GITHUB_MAKE_REPO_PUBLIC
+              value: {{ .Values.github.public | quote }}
+            - name: GITHUB_ORG
+              value: {{ .Values.github.organization | quote }}
+            - name: GITHUB_APP_ID
+              value: {{ .Values.github.app_id | quote }}
+            - name: GITHUB_APP_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: github
+                  key: private_key
+            - name: BUGTRACKER_PROVIDER
+              value: {{ .Values.bugtracker.provider | quote }}
+            - name: BUGTRACKER_GITHUB_REPO
+              value: {{ .Values.bugtracker.repository | quote }}
+            - name: BUGTRACKER_GITHUB_USE_FORGE_AUTH
+              value: {{ .Values.bugtracker.use_forge_auth | quote }}
+            - name: STORAGE_ENDPOINT
+              value: {{ .Values.storage.endpoint | quote }}
+            - name: STORAGE_REGION
+              value: {{ .Values.storage.region | quote }}
+            - name: IMPORT_ROLLING_RELEASE
+              value: "true"
+            - name: PUBLIC_URI
+              value: "https://{{ .Values.ingress.host }}"
+            - name: STORAGE_CONNECTION_STRING
+              value: {{ .Values.storage.connection_string | quote }}
+            - name: STORAGE_PATH_STYLE
+              value: {{ .Values.storage.path_style | quote }}
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: storage
+                  key: access_key
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: storage
+                  key: secret_key
+            - name: TEMPORAL_ADDRESS
+              value: {{ .Values.temporal.address | quote }}
+            - name: TEMPORAL_NAMESPACE
+              value: {{ .Values.temporal.namespace | quote }}
+            - name: TEMPORAL_TASK_QUEUE
+              value: {{ .Values.temporal.task_queue | quote }}
+            - name: DATABASE_URI
+              valueFrom:
+                secretKeyRef:
+                  name: db
+                  key: uri
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}

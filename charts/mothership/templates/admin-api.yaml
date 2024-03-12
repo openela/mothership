@@ -1,0 +1,89 @@
+{{- if .Values.admin.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mothership-admin-api-deployment
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "mothership.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: mothership-admin-api
+  template:
+    metadata:
+      labels:
+        app: mothership-admin-api
+    spec:
+      serviceAccountName: mothership
+      containers:
+        - name: mothership-admin-api
+          image: "{{ .Values.image.repository }}/mship_admin_server:{{ .Values.image.tag }}"
+          env:
+            - name: REQUIRED_OIDC_GROUP
+              value: {{ .Values.oidc.required_group | quote }}
+            - name: OIDC_ISSUER
+              value: {{ .Values.oidc.issuer | quote }}
+            - name: TEMPORAL_ADDRESS
+              value: {{ .Values.temporal.address | quote }}
+            - name: TEMPORAL_NAMESPACE
+              value: {{ .Values.temporal.namespace | quote }}
+            - name: TEMPORAL_TASK_QUEUE
+              value: {{ .Values.temporal.task_queue | quote }}
+            - name: DATABASE_URI
+              valueFrom:
+                secretKeyRef:
+                  name: db
+                  key: uri
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          ports:
+            - name: grpc
+              containerPort: 6687
+            - name: http
+              containerPort: 6688
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mothership-admin-api-service
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    app: mothership-admin-api
+  ports:
+    - name: grpc
+      protocol: TCP
+      port: 6687
+      targetPort: 6687
+    - name: http
+      protocol: TCP
+      port: 6688
+      targetPort: 6688
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mothership-admin-api-ingress
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    konghq.com/strip-path: "true"
+    konghq.com/protocols: "https"
+spec:
+  ingressClassName: kong
+  tls:
+    - hosts:
+        - {{ .Values.ingress.host }}
+      secretName: mothership-tls
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: /admin-api
+            pathType: Prefix
+            backend:
+              service:
+                name: mothership-admin-api-service
+                port:
+                  number: 6688
+{{- end }}
