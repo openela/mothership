@@ -1,0 +1,126 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mothership-api-deployment
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "mothership.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: mothership-api
+  template:
+    metadata:
+      labels:
+        app: mothership-api
+    spec:
+      serviceAccountName: mothership
+      containers:
+        - name: mothership-api
+          image: "{{ .Values.image.repository }}/mship_server:{{ .Values.image.tag }}"
+          env:
+            - name: TEMPORAL_ADDRESS
+              value: {{ .Values.temporal.address | quote }}
+            - name: TEMPORAL_NAMESPACE
+              value: {{ .Values.temporal.namespace | quote }}
+            - name: TEMPORAL_TASK_QUEUE
+              value: {{ .Values.temporal.task_queue | quote }}
+            - name: DATABASE_URI
+              valueFrom:
+                secretKeyRef:
+                  name: db
+                  key: uri
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          ports:
+            - name: grpc
+              containerPort: 6677
+            - name: http
+              containerPort: 6678
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mothership-api-service
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    app: mothership-api
+  ports:
+    - name: grpc
+      protocol: TCP
+      port: 6677
+      targetPort: 6677
+    - name: http
+      protocol: TCP
+      port: 6678
+      targetPort: 6678
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mothership-grpc-service
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    konghq.com/protocol: "grpc"
+spec:
+  selector:
+    app: mothership-api
+  ports:
+    - name: grpc
+      protocol: TCP
+      port: 6677
+      targetPort: 6677
+---
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mothership-api-ingress
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    konghq.com/strip-path: "true"
+    konghq.com/protocols: "https"
+spec:
+  ingressClassName: kong
+  tls:
+    - hosts:
+        - {{ .Values.ingress.host }}
+      secretName: mothership-tls
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: mothership-api-service
+                port:
+                  name: http
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mothership-grpc-ingress
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    konghq.com/protocols: "grpcs"
+spec:
+  ingressClassName: kong
+  tls:
+    - hosts:
+        - {{ .Values.ingress.host }}
+      secretName: mothership-tls
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: /mothership.v1.SrpmArchiver
+            pathType: Prefix
+            backend:
+              service:
+                name: mothership-grpc-service
+                port:
+                  name: grpc
+{{- end}}
