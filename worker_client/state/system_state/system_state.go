@@ -67,13 +67,21 @@ func New(args *Args) (*State, error) {
 		if err != nil {
 			return nil, err
 		}
-		err = f.Close()
+
+		// Create the state
+		s.state = &state.PackageState{
+			Packages: make(map[string]string),
+		}
+
+		// Write the state to disk
+		err = json.NewEncoder(f).Encode(s.state)
 		if err != nil {
 			return nil, err
 		}
 
-		s.state = &state.PackageState{
-			Packages: make(map[string]string),
+		err = f.Close()
+		if err != nil {
+			return nil, err
 		}
 
 		return s, nil

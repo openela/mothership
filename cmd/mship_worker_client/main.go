@@ -13,6 +13,7 @@ import (
 	mothershippb "github.com/openela/mothership/proto/v1"
 	"github.com/openela/mothership/worker_client"
 	"github.com/openela/mothership/worker_client/state/system_state"
+	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -27,11 +28,11 @@ func run(ctx *cli.Context) error {
 	var args system_state.Args
 	configBytes, err := os.ReadFile(configPath)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to read config file")
 	}
 	err = yaml.Unmarshal(configBytes, &args)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to unmarshal config file")
 	}
 
 	storage, err := storage_detector.FromFlags(ctx)
@@ -42,7 +43,7 @@ func run(ctx *cli.Context) error {
 
 	systemState, err := system_state.New(&args)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to create system state")
 	}
 
 	pollMinutes := ctx.Int("poll-minutes")
