@@ -166,6 +166,8 @@ func (s *State) FetchNewPackageState() error {
 
 	cmd := exec.Command("reposync", args...)
 	cmd.Dir = s.pathToSrcs
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 	err := cmd.Run()
 	if err != nil {
 		return err
