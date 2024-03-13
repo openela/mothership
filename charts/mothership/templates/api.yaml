@@ -15,6 +15,17 @@ spec:
         app: mothership-api
     spec:
       serviceAccountName: mothership
+      initContainers:
+        - name: migrate
+          image: "{{ .Values.image.repository }}/mship_server:{{ .Values.image.tag }}"
+          args:
+            - "migrate"
+          env:
+            - name: DATABASE_URI
+              valueFrom:
+                secretKeyRef:
+                  name: db
+                  key: uri
       containers:
         - name: mothership-api
           image: "{{ .Values.image.repository }}/mship_server:{{ .Values.image.tag }}"
