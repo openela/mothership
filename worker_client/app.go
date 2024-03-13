@@ -29,15 +29,18 @@ func getRedHatRelease() (string, error) {
 	return strings.TrimSpace(string(bts)), nil
 }
 
-func Run(ctx context.Context, rootURI string, s state.State, srpmArchiver mothershippb.SrpmArchiverClient) error {
+func Run(ctx context.Context, rootURI string, forceRelease string, s state.State, srpmArchiver mothershippb.SrpmArchiverClient) error {
 	_, err := srpmArchiver.WorkerPing(ctx, &emptypb.Empty{})
 	if err != nil {
 		slog.Error("failed to ping mothership", "error", err)
 	}
 
-	redHatRelease, err := getRedHatRelease()
-	if err != nil {
-		return err
+	redHatRelease := forceRelease
+	if redHatRelease == "" {
+		redHatRelease, err = getRedHatRelease()
+		if err != nil {
+			return err
+		}
 	}
 	slog.Info("got red hat release", "release", redHatRelease)
 

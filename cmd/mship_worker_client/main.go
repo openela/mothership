@@ -64,7 +64,7 @@ func run(ctx *cli.Context) error {
 	go func() {
 		defer wg.Done()
 		for {
-			err := worker_client.Run(outgoingCtx, blobURI, systemState, srpmArchiverClient)
+			err := worker_client.Run(outgoingCtx, blobURI, ctx.String("force-release"), systemState, srpmArchiverClient)
 			if err != nil {
 				slog.Error("failed polling for changes", "error", err)
 			}
@@ -110,6 +110,11 @@ func main() {
 				Usage:   "Blob URI",
 				EnvVars: []string{"BLOB_URI"},
 				Value:   "s3://mship-srpm1",
+			},
+			&cli.StringFlag{
+				Name:    "force-release",
+				Usage:   "Release value to be used always instead of dynamically fetching from dnf",
+				EnvVars: []string{"FORCE_RELEASE"},
 			},
 		},
 	)
