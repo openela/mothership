@@ -19,6 +19,10 @@ spec:
         - name: mothership-worker
           image: "{{ .Values.image.repository }}/mship_worker_server:{{ .Values.image.tag }}"
           env:
+            {{- if .Values.worker.allowedGpgKeys }}
+            - name: ALLOWED_GPG_KEYS
+              value: {{ .Values.worker.allowedGpgKeys | quote }}
+            {{- end }}
             - name: GIT_PROVIDER
               value: github
             - name: GITHUB_MAKE_REPO_PUBLIC
