@@ -79,8 +79,7 @@
       {{template "content" .}}
   </div>
   <div class="footer">
-    Copyright &copy; 2023 Mustafa Gezen, Rocky Enterprise Software Foundation, Inc. and Ctrl IQ,
-    Inc.
+    Copyright &copy; 2023 Mustafa Gezen, and Ctrl IQ, Inc.
     <div class="right">
       Version: {{ctx "version"}}
     </div>

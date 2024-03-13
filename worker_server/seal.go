@@ -148,6 +148,10 @@ func (w *Worker) WaitForEntriesToSettle(ctx context.Context, req *mothershippb.S
 }
 
 func (w *Worker) CreateTicket(ctx context.Context, batchName string) error {
+	if w.bugtracker == nil {
+		return nil
+	}
+
 	batch, err := base.Q[mothership_db.Batch](w.db).F("name", batchName).GetOrNil()
 	if err != nil {
 		return errors.Wrap(err, "failed to get batch")
@@ -207,6 +211,10 @@ func (w *Worker) CreateTicket(ctx context.Context, batchName string) error {
 }
 
 func (w *Worker) UpdateTicketStatus(ctx context.Context, entry *mothershippb.Entry) error {
+	if w.bugtracker == nil {
+		return nil
+	}
+
 	// Wait until batch has a ticket URI
 	var batch *mothership_db.Batch
 	for {
