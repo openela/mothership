@@ -138,10 +138,8 @@ func FromFile(path string, rolling bool, keys ...*openpgp.Entity) (*State, error
 		rolling:        rolling,
 	}
 
-	baseName := filepath.Base(path)
-
 	// Create a temporary directory.
-	state.tempDir, err = os.MkdirTemp("", baseName+"-srpm_import-*")
+	state.tempDir, err = os.MkdirTemp("", "srpm_import-*")
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create temporary directory")
 	}

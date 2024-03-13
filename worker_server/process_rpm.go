@@ -3,6 +3,11 @@ package mothership_worker_server
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"io"
+	"os"
+	"path/filepath"
+	"strings"
+
 	"github.com/go-git/go-billy/v5/memfs"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/storage/memory"
@@ -11,10 +16,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sassoftware/go-rpmutils"
 	"go.temporal.io/sdk/temporal"
-	"io"
-	"os"
-	"path/filepath"
-	"strings"
 )
 
 // VerifyResourceExists verifies that the resource exists.
@@ -57,7 +58,7 @@ func (w *Worker) VerifyResourceExists(uri string) error {
 // ImportRPM imports an RPM into the database.
 // This is a Temporal activity.
 func (w *Worker) ImportRPM(uri string, checksumSha256 string, osRelease string) (*mothershippb.ImportRPMResponse, error) {
-	tempDir, err := os.MkdirTemp("", "mothership-worker-server-import-rpm-*")
+	tempDir, err := os.MkdirTemp("", checksumSha256+"-mothership-worker-server-import-rpm-*")
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create temporary directory")
 	}
