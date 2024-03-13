@@ -50,6 +50,9 @@ ingress:
   enabled: false # enabled determines whether the ingress is enabled and if it is then it requires CertManager to be installed.
   host: "imports.openela.org" # host is the host used for the ingress.
 
+worker:
+  import_rolling: false # import_rolling determines branch strategy for imports.
+
 # The chart assumes that all containers will use the same resources.
 resources:
   requests:

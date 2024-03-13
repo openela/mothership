@@ -43,7 +43,7 @@ spec:
             - name: STORAGE_REGION
               value: {{ .Values.storage.region | quote }}
             - name: IMPORT_ROLLING_RELEASE
-              value: "true"
+              value: "{{ .Values.worker.import_rolling }}"
             - name: PUBLIC_URI
               value: "https://{{ .Values.ingress.host }}"
             - name: STORAGE_CONNECTION_STRING
