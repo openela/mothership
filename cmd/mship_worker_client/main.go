@@ -17,6 +17,7 @@ import (
 	"github.com/urfave/cli/v2"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"gopkg.in/yaml.v3"
 )
@@ -49,7 +50,12 @@ func run(ctx *cli.Context) error {
 	pollMinutes := ctx.Int("poll-minutes")
 	slog.Info("polling for changes", "interval", pollMinutes)
 
-	creds := credentials.NewTLS(&tls.Config{})
+	var creds credentials.TransportCredentials
+	if ctx.Bool("insecure") {
+		creds = insecure.NewCredentials()
+	} else {
+		creds = credentials.NewTLS(&tls.Config{})
+	}
 	grpcDial, err := grpc.Dial(ctx.String("api-endpoint"), grpc.WithTransportCredentials(creds))
 	if err != nil {
 		return err
@@ -116,6 +122,11 @@ func main() {
 				Name:    "force-release",
 				Usage:   "Release value to be used always instead of dynamically fetching from dnf",
 				EnvVars: []string{"FORCE_RELEASE"},
+			},
+			&cli.BoolFlag{
+				Name:    "insecure",
+				Usage:   "Use insecure connection",
+				EnvVars: []string{"INSECURE"},
 			},
 		},
 	)
