@@ -87,6 +87,15 @@ func New(args *Args) (*State, error) {
 		return s, nil
 	}
 
+	// Check if path to srcs exists
+	_, err = os.Stat(args.PathToSrcs)
+	if os.IsNotExist(err) {
+		err = os.MkdirAll(args.PathToSrcs, 0755)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	f, err := os.OpenFile(args.FilePath, os.O_RDONLY, 0644)
 	if err != nil {
 		return nil, err
