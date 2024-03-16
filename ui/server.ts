@@ -179,7 +179,7 @@ if (prod) {
   );
   app.set('etag', false);
 
-  app.use(express.static('dist'));
+  app.use('/assets', express.static('dist/assets'));
 
   app.get('*', (req, res) => {
     // Serve index.html
