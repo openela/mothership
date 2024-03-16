@@ -15,7 +15,7 @@ spec:
       serviceAccountName: mothership
       containers:
         - name: mothership-ui
-          image: ghcr.io/mstg/mship_ui@sha256:308fa293a01555352816c32bceecc6c92c40f914912ea92f74ffa28cb4f15d91
+          image: ghcr.io/mstg/mship_ui@sha256:4b80a62cd4d69911d7e4de21a474d9271ee3c41e2e994b4fb2f42e60cecd4880
           env:
             - name: NODE_ENV
               value: "production"
