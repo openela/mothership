@@ -2,6 +2,10 @@ package mothership_rpc
 
 import (
 	"context"
+	"regexp"
+	"strings"
+
+	"github.com/iancoleman/strcase"
 	"github.com/openela/mothership/base"
 	mothership_db "github.com/openela/mothership/db"
 	mothershippb "github.com/openela/mothership/proto/v1"
@@ -12,8 +16,6 @@ import (
 	"go.temporal.io/sdk/client"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"regexp"
-	"strings"
 )
 
 var codenameRegexp = regexp.MustCompile(` \(([^)]+)\)`)
@@ -62,7 +64,15 @@ func (s *Server) GetEntry(ctx context.Context, req *mothershippb.GetEntryRequest
 }
 
 func (s *Server) ListEntries(_ context.Context, req *mothershippb.ListEntriesRequest) (*mothershippb.ListEntriesResponse, error) {
-	aipOptions := pika.ProtoReflect(&mothershippb.Entry{})
+	aipOptions := pika.ProtoReflectWithOpts(&mothershippb.Entry{}, pika.ProtoReflectOptions{
+		ColumnName: func(s string) string {
+			if s == "batch" {
+				return "batch_name"
+			}
+
+			return strcase.ToSnake(s)
+		},
+	})
 
 	page, nt, err := base.Q[mothership_db.Entry](s.db).GetPage(req, aipOptions)
 	if err != nil {

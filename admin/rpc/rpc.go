@@ -18,13 +18,13 @@ type Server struct {
 	temporal client.Client
 }
 
-func NewServer(db *base.DB, temporalClient client.Client, oidcInterceptorDetails *base.OidcInterceptorDetails, opts ...base.GRPCServerOption) (*Server, error) {
-	oidcInterceptor, err := base.OidcGrpcInterceptor(oidcInterceptorDetails)
+func NewServer(db *base.DB, temporalClient client.Client, githubTeam string, opts ...base.GRPCServerOption) (*Server, error) {
+	githubInterceptor, err := base.GithubGrpcInterceptor(githubTeam)
 	if err != nil {
 		return nil, err
 	}
 
-	opts = append(opts, base.WithUnaryInterceptors(oidcInterceptor))
+	opts = append(opts, base.WithUnaryInterceptors(githubInterceptor))
 	grpcServer, err := base.NewGRPCServer(opts...)
 	if err != nil {
 		return nil, err

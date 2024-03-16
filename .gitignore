@@ -2,4 +2,7 @@
 .idea
 ui/node_modules
 ui/tmp
-ui/static/dist
+ui/dist
+# We use pnpm for package management but bun runtime
+ui/bun.lockb
+ui/package-lock.json

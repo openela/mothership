@@ -36,4 +36,7 @@ message Batch {
 
   // Output only. Bugtracker URI of the batch.
   google.protobuf.StringValue bugtracker_uri = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // Output only. Entry count of the batch.
+  int32 entry_count = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
 }

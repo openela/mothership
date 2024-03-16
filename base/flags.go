@@ -1,11 +1,11 @@
 package base
 
 import (
-	"github.com/coreos/go-oidc/v3/oidc"
-	"github.com/urfave/cli/v2"
-	"go.temporal.io/sdk/client"
 	"log/slog"
 	"os"
+
+	"github.com/urfave/cli/v2"
+	"go.temporal.io/sdk/client"
 )
 
 type EnvVar string
@@ -14,16 +14,9 @@ const (
 	EnvVarGRPCPort                EnvVar = "GRPC_PORT"
 	EnvVarGatewayPort             EnvVar = "GATEWAY_PORT"
 	EnvVarDatabaseURI             EnvVar = "DATABASE_URI"
-	EnvVarPort                    EnvVar = "PORT"
-	EnvVarOIDCIssuer              EnvVar = "OIDC_ISSUER"
-	EnvVarOIDCClientID            EnvVar = "OIDC_CLIENT_ID"
-	EnvVarOIDCClientSecret        EnvVar = "OIDC_CLIENT_SECRET"
-	EnvVarOIDCUserInfoOverride    EnvVar = "OIDC_USERINFO_OVERRIDE"
-	EnvVarRequiredOIDCGroup       EnvVar = "REQUIRED_OIDC_GROUP"
 	EnvVarTemporalNamespace       EnvVar = "TEMPORAL_NAMESPACE"
 	EnvVarTemporalAddress         EnvVar = "TEMPORAL_ADDRESS"
 	EnvVarTemporalTaskQueue       EnvVar = "TEMPORAL_TASK_QUEUE"
-	EnvVarSelf                    EnvVar = "SELF"
 	EnvVarStorageEndpoint         EnvVar = "STORAGE_ENDPOINT"
 	EnvVarStorageConnectionString EnvVar = "STORAGE_CONNECTION_STRING"
 	EnvVarStorageRegion           EnvVar = "STORAGE_REGION"
@@ -107,82 +100,6 @@ func WithGatewayFlags(defaultPort int) []cli.Flag {
 	}
 }
 
-func WithOidcFlags(defaultOidcIssuer string, defaultGroup string) []cli.Flag {
-	if defaultOidcIssuer == "" {
-		defaultOidcIssuer = "https://accounts.rockylinux.org/auth/realms/rocky"
-	}
-
-	return []cli.Flag{
-		&cli.StringFlag{
-			Name:    "oidc-issuer",
-			Usage:   "OIDC issuer",
-			EnvVars: []string{string(EnvVarOIDCIssuer)},
-			Value:   defaultOidcIssuer,
-		},
-		&cli.StringFlag{
-			Name:    "required-oidc-group",
-			Usage:   "OIDC group that is required to access the frontend",
-			EnvVars: []string{string(EnvVarRequiredOIDCGroup)},
-			Value:   defaultGroup,
-		},
-	}
-}
-
-func WithFrontendFlags(defaultPort int) []cli.Flag {
-	if defaultPort == 0 {
-		defaultPort = 9111
-	}
-
-	return []cli.Flag{
-		&cli.IntFlag{
-			Name:    "port",
-			Usage:   "frontend port",
-			EnvVars: []string{string(EnvVarPort)},
-			Value:   defaultPort,
-		},
-	}
-}
-
-func WithFrontendAuthFlags(defaultOidcIssuer string) []cli.Flag {
-	if defaultOidcIssuer == "" {
-		defaultOidcIssuer = "https://accounts.rockylinux.org/auth/realms/rocky"
-	}
-
-	return []cli.Flag{
-		&cli.StringFlag{
-			Name:    "oidc-issuer",
-			Usage:   "OIDC issuer",
-			EnvVars: []string{string(EnvVarOIDCIssuer)},
-			Value:   defaultOidcIssuer,
-		},
-		&cli.StringFlag{
-			Name:    "oidc-client-id",
-			Usage:   "OIDC client ID",
-			EnvVars: []string{string(EnvVarOIDCClientID)},
-		},
-		&cli.StringFlag{
-			Name:    "oidc-client-secret",
-			Usage:   "OIDC client secret",
-			EnvVars: []string{string(EnvVarOIDCClientSecret)},
-		},
-		&cli.StringFlag{
-			Name:    "oidc-userinfo-override",
-			Usage:   "OIDC userinfo override",
-			EnvVars: []string{string(EnvVarOIDCUserInfoOverride)},
-		},
-		&cli.StringFlag{
-			Name:    "required-oidc-group",
-			Usage:   "OIDC group that is required to access the frontend",
-			EnvVars: []string{string(EnvVarRequiredOIDCGroup)},
-		},
-		&cli.StringFlag{
-			Name:    "self",
-			Usage:   "Endpoint pointing to the frontend",
-			EnvVars: []string{string(EnvVarSelf)},
-		},
-	}
-}
-
 // WithStorageFlags adds the storage flags to the app.
 func WithStorageFlags() []cli.Flag {
 	return []cli.Flag{
@@ -235,33 +152,6 @@ func FlagsToGRPCServerOptions(ctx *cli.Context) []GRPCServerOption {
 		WithGRPCPort(ctx.Int("grpc-port")),
 		WithGatewayPort(ctx.Int("gateway-port")),
 	}
-}
-
-// FlagsToFrontendInfo converts the cli flags to frontend info.
-func FlagsToFrontendInfo(ctx *cli.Context) *FrontendInfo {
-	return &FrontendInfo{
-		Title:                ctx.App.Name,
-		Port:                 ctx.Int("port"),
-		Self:                 ctx.String("self"),
-		OIDCIssuer:           ctx.String("oidc-issuer"),
-		OIDCClientID:         ctx.String("oidc-client-id"),
-		OIDCClientSecret:     ctx.String("oidc-client-secret"),
-		OIDCGroup:            ctx.String("required-oidc-group"),
-		OIDCUserInfoOverride: ctx.String("oidc-userinfo-override"),
-	}
-}
-
-// FlagsToOidcInterceptorDetails converts the cli flags to oidc interceptor details.
-func FlagsToOidcInterceptorDetails(ctx *cli.Context) (*OidcInterceptorDetails, error) {
-	provider, err := oidc.NewProvider(ctx.Context, ctx.String("oidc-issuer"))
-	if err != nil {
-		return nil, err
-	}
-
-	return &OidcInterceptorDetails{
-		Provider: &OidcProviderImpl{provider},
-		Group:    ctx.String("required-oidc-group"),
-	}, nil
 }
 
 // GetDBFromFlags gets the database from the cli flags.

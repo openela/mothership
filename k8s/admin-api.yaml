@@ -17,10 +17,8 @@ spec:
         - name: mothership-admin-api
           image: ko://github.com/openela/mothership/cmd/mship_admin_server
           env:
-            - name: REQUIRED_OIDC_GROUP
-              value: releng
-            - name: OIDC_ISSUER
-              value: "https://id.openela.org/realms/openela"
+            - name: GITHUB_TEAM
+              value: openela/teams/tsc
             - name: TEMPORAL_ADDRESS
               value: temporal-frontend.default.svc.cluster.local:7233
             - name: DATABASE_URI

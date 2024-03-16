@@ -19,7 +19,7 @@ import (
 )
 
 func (s *Server) GetBatch(_ context.Context, req *mothershippb.GetBatchRequest) (*mothershippb.Batch, error) {
-	batch, err := base.Q[mothership_db.Batch](s.db).F("name", req.Name).GetOrNil()
+	batch, err := base.Q[mothership_db.BatchView](s.db).F("name", req.Name).GetOrNil()
 	if err != nil {
 		base.LogErrorf("failed to get batch: %v", err)
 		return nil, status.Error(codes.Internal, "failed to get batch")
@@ -35,14 +35,14 @@ func (s *Server) GetBatch(_ context.Context, req *mothershippb.GetBatchRequest) 
 func (s *Server) ListBatches(_ context.Context, req *mothershippb.ListBatchesRequest) (*mothershippb.ListBatchesResponse, error) {
 	aipOptions := pika.ProtoReflect(&mothershippb.Batch{})
 
-	page, nt, err := base.Q[mothership_db.Batch](s.db).GetPage(req, aipOptions)
+	page, nt, err := base.Q[mothership_db.BatchView](s.db).GetPage(req, aipOptions)
 	if err != nil {
 		base.LogErrorf("failed to get batch page: %v", err)
 		return nil, status.Error(codes.Internal, "failed to get batch page")
 	}
 
 	return &mothershippb.ListBatchesResponse{
-		Batches:       base.SliceToPB[*mothershippb.Batch, *mothership_db.Batch](page),
+		Batches:       base.SliceToPB[*mothershippb.Batch, *mothership_db.BatchView](page),
 		NextPageToken: nt,
 	}, nil
 }

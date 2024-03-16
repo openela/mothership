@@ -14,7 +14,3 @@ builds:
     main: ./cmd/mship_worker_server
   - id: mship_worker_client
     main: ./cmd/mship_worker_client
-  - id: mship_ui
-    main: ./ui
-    ldflags:
-      - -X main.version={{.Env.VERSION}}

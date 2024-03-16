@@ -15,32 +15,38 @@ spec:
       serviceAccountName: mothership
       containers:
         - name: mothership-ui
-          image: ko://github.com/openela/mothership/ui
+          image: ghcr.io/mstg/mship_ui@sha256:308fa293a01555352816c32bceecc6c92c40f914912ea92f74ffa28cb4f15d91
           env:
-            - name: MOTHERSHIP_PUBLIC_API
-              value: mothership-api-service:6677
-            - name: MOTHERSHIP_ADMIN_API
-              value: mothership-admin-api-service:6687
-            - name: INSTANCE_NAME
-              value: "OpenELA Imports"
+            - name: NODE_ENV
+              value: "production"
+            - name: API_URI
+              value: http://mothership-api-service:6678
+            - name: ADMIN_API_URI
+              value: http://mothership-admin-api-service:6688
             - name: SELF
               value: "https://imports.openela.org"
-            - name: REQUIRED_OIDC_GROUP
-              value: releng
-            - name: OIDC_ISSUER
-              value: "https://id.openela.org/realms/openela"
-            - name: OIDC_CLIENT_ID
-              value: mothership
-            - name: OIDC_CLIENT_SECRET
+            - name: CLIENT_ID
               valueFrom:
                 secretKeyRef:
-                  name: oidc
-                  key: secret
-            - name: CSRF_SECRET
+                  name: gh
+                  key: client_id
+            - name: CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: gh
+                  key: client_secret
+            - name: SECRET
               valueFrom:
                 secretKeyRef:
                   name: csrf
                   key: secret
+            - name: REDIS_HOST
+              value: redis-master.default.svc.cluster.local
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis
+                  key: password
           resources:
             requests:
               memory: "128Mi"

@@ -13,6 +13,17 @@ spec:
         app: mothership-api
     spec:
       serviceAccountName: mothership
+      initContainers:
+        - name: migrate
+          image: ko://github.com/openela/mothership/cmd/mship_server
+          args:
+            - "migrate"
+          env:
+            - name: DATABASE_URI
+              valueFrom:
+                secretKeyRef:
+                  name: db
+                  key: uri
       containers:
         - name: mothership-api
           image: ko://github.com/openela/mothership/cmd/mship_server
