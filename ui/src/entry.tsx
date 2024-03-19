@@ -203,6 +203,11 @@ export default function Entry() {
               </div>
             )}
           </div>
+          {data.errorMessage && (
+            <pre>
+              <code>{data.errorMessage}</code>
+            </pre>
+          )}
         </>
       )}
       {isLoading && <Skeleton className="h-4 w-full" />}
