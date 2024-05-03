@@ -1,3 +1,8 @@
+/**
+ * Copyright 2024 The Mothership Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 export enum EntryState {
   STATE_UNSPECIFIED = 0,
   ARCHIVING = 1,

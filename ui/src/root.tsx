@@ -1,3 +1,8 @@
+/**
+ * Copyright 2024 The Mothership Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 import React from 'react';
 import { Link, Navigate, NavLink, Route, Routes } from 'react-router-dom';
 import { cn } from '@/utils.ts';

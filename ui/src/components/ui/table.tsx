@@ -1,3 +1,8 @@
+/**
+ * Copyright 2024 The Mothership Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 import * as React from "react"
 
 import { cn } from "src/utils"

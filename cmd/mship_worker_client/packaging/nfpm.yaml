@@ -1,3 +1,6 @@
+# Copyright 2024 The Mothership Authors
+# SPDX-License-Identifier: Apache-2.0
+
 name: "mship_worker_client"
 arch: "amd64"
 platform: "linux"

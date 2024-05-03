@@ -1,3 +1,8 @@
+/**
+ * Copyright 2024 The Mothership Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 export interface Batch {
   // Output only. Unique ID of the batch.
   name: string;
