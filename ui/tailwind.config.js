@@ -1,3 +1,8 @@
+/**
+ * Copyright 2024 The Mothership Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: 'class',

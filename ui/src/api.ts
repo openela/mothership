@@ -1,3 +1,8 @@
+/**
+ * Copyright 2024 The Mothership Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 const API_BASE_URL = '/ui/api';
 const ADMIN_API_BASE_URL = '/ui/admin-api';
 

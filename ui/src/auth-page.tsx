@@ -1,3 +1,8 @@
+/**
+ * Copyright 2024 The Mothership Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 import React from 'react';
 import OpenELA from '@/openela.tsx';
 import GithubIcon from '@/github-icon.tsx';

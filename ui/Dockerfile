@@ -1,3 +1,6 @@
+# Copyright 2024 The Mothership Authors
+# SPDX-License-Identifier: Apache-2.0
+
 FROM node:20-slim AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"

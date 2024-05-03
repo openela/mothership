@@ -1,3 +1,8 @@
+/**
+ * Copyright 2024 The Mothership Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 export interface Worker {
   // Output only. The resource name of the worker.
   // Format: `workers/{worker}`

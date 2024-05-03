@@ -1,3 +1,6 @@
+# Copyright 2024 The Mothership Authors
+# SPDX-License-Identifier: Apache-2.0
+
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
