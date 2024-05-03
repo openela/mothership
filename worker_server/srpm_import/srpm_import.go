@@ -305,10 +305,10 @@ func (s *State) writeMetadataFile(targetFS billy.Filesystem) error {
 	return nil
 }
 
-// expandLayout expands the layout of the SRPM into the target filesystem.
+// ExpandLayout expands the layout of the SRPM into the target filesystem.
 // Moves all sources into SOURCES/ directory.
 // Spec file is moved to SPECS/ directory.
-func (s *State) expandLayout(targetFS billy.Filesystem) error {
+func (s *State) ExpandLayout(targetFS billy.Filesystem) error {
 	// Create SOURCES/ directory.
 	err := targetFS.MkdirAll("SOURCES", 0755)
 	if err != nil {
@@ -621,7 +621,7 @@ func (s *State) populateTargetRepo(repo *git.Repository, targetFS billy.Filesyst
 	}
 
 	// Expand the layout of the SRPM.
-	err = s.expandLayout(targetFS)
+	err = s.ExpandLayout(targetFS)
 	if err != nil {
 		return errors.Wrap(err, "failed to expand layout")
 	}

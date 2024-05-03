@@ -191,7 +191,7 @@ func TestExpandLayout(t *testing.T) {
 	}()
 
 	fs := memfs.New()
-	require.Nil(t, s.expandLayout(fs))
+	require.Nil(t, s.ExpandLayout(fs))
 
 	fi, err := fs.ReadDir(".")
 	require.Nil(t, err)
@@ -230,7 +230,7 @@ func TestExpandLayout_CopyMode(t *testing.T) {
 	require.Nil(t, shellFile.Close())
 
 	fs := memfs.New()
-	require.Nil(t, s.expandLayout(fs))
+	require.Nil(t, s.ExpandLayout(fs))
 
 	fi, err := fs.ReadDir(".")
 	require.Nil(t, err)
@@ -266,7 +266,7 @@ func TestWriteMetadataExpandLayout(t *testing.T) {
 	fs := memfs.New()
 	require.Nil(t, s.determineLookasideBlobs())
 	require.Nil(t, s.writeMetadataFile(fs))
-	require.Nil(t, s.expandLayout(fs))
+	require.Nil(t, s.ExpandLayout(fs))
 
 	fi, err := fs.ReadDir(".")
 	require.Nil(t, err)
