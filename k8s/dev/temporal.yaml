@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dev-temporal
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dev-temporal
+  template:
+    metadata:
+      labels:
+        app: dev-temporal
+    spec:
+      containers:
+      - name: mship-temporal
+        image: ghcr.io/mstg/temporalite:latest
+        args: ["--log-format", "pretty", "--log-level", "fatal", "--ephemeral"]
+        ports:
+        - containerPort: 7233
+        - containerPort: 8233
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: temporal-frontend
+spec:
+  selector:
+    app: dev-temporal
+  ports:
+  - name: rpc
+    protocol: TCP
+    port: 7233
+    targetPort: 7233
+  - name: grpc
+    protocol: TCP
+    port: 8233
+    targetPort: 8233
+

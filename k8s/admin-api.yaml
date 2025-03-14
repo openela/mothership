@@ -18,7 +18,7 @@ spec:
       serviceAccountName: mothership
       containers:
         - name: mothership-admin-api
-          image: ko://github.com/openela/mothership/cmd/mship_admin_server
+          image: github.com/openela/mothership/cmd/mship_admin_server
           env:
             - name: GITHUB_TEAM
               value: openela/teams/tsc

@@ -24,7 +24,7 @@ COPY --from=install /temp/dev/node_modules node_modules
 ENV NODE_ENV=development
 RUN pnpm run build
 
-FROM cgr.dev/chainguard/bun
+FROM oven/bun:1
 WORKDIR /app
 COPY --from=install /temp/prod/node_modules node_modules
 COPY --from=build /app/dist dist

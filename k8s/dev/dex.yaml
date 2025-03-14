@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dev-dex
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dev-dex
+  template:
+    metadata:
+      labels:
+        app: dev-dex
+    spec:
+      containers:
+      - name: mship-dex
+        image: ghcr.io/dexidp/dex:v2.37.0
+        command: ["dex", "serve", "/dex.yaml"]
+        ports:
+        - containerPort: 5556
+        volumeMounts:
+        - name: dex-config
+          mountPath: /dex.yaml
+          subPath: dex.yaml
+      volumes:
+      - name: dex-config
+        configMap:
+          name: dex-config
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: dev-dex
+# spec:
+#   selector:
+#     app: dev-dex
+#   ports:
+#   - protocol: TCP
+#     port: 5556
+#     targetPort: 5556

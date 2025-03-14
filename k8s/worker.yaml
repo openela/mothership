@@ -18,7 +18,7 @@ spec:
       serviceAccountName: mothership
       containers:
         - name: mothership-worker
-          image: ko://github.com/openela/mothership/cmd/mship_worker_server
+          image: github.com/openela/mothership/cmd/mship_worker_server
           env:
             - name: GIT_PROVIDER
               value: github

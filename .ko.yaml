@@ -5,8 +5,10 @@ defaultPlatforms:
   - linux/arm64
   - linux/amd64
 
-baseImageOverrides:
-  github.com/openela/mothership/cmd/mship_worker_client: ghcr.io/mstg/mship_base:latest
+# baseImageOverrides:
+#   github.com/openela/mothership/cmd/mship_worker_client: ghcr.io/mstg/mship_base:latest
+
+defaultRegistry: github.com/openela/mothership
 
 builds:
   - id: mship_server

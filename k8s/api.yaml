@@ -18,7 +18,7 @@ spec:
       serviceAccountName: mothership
       initContainers:
         - name: migrate
-          image: ko://github.com/openela/mothership/cmd/mship_server
+          image: github.com/openela/mothership/cmd/mship_server
           args:
             - "migrate"
           env:
@@ -29,7 +29,7 @@ spec:
                   key: uri
       containers:
         - name: mothership-api
-          image: ko://github.com/openela/mothership/cmd/mship_server
+          image: github.com/openela/mothership/cmd/mship_server
           env:
             - name: TEMPORAL_ADDRESS
               value: temporal-frontend.default.svc.cluster.local:7233
